@@ -43,26 +43,6 @@
       <version>21.0.4</version>
     </dependency>
     <dependency>
-      <groupId>org.openjfx</groupId>
-      <artifactId>javafx-swing</artifactId>
-      <version>21.0.4</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jdesktop</groupId>
-      <artifactId>java3d-core</artifactId>
-      <version>1.5.2</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jdesktop</groupId>
-      <artifactId>java3d-utils</artifactId>
-      <version>1.5.2</version>
-    </dependency>
-    <dependency>
-      <groupId>javax.vecmath</groupId>
-      <artifactId>vecmath</artifactId>
-      <version>1.5.2</version>
-    </dependency>
-    <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
       <scope>test</scope>

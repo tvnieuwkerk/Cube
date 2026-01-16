@@ -1,22 +1,22 @@
 package nl.tvn.cube.viewmodel;
 
-import javax.media.j3d.TransformGroup;
 import nl.tvn.cube.model.Cubie;
+import javafx.scene.Group;
 
 public final class CubieNode {
     private final Cubie cubie;
-    private final TransformGroup transformGroup;
+    private final Group group;
 
-    public CubieNode(Cubie cubie, TransformGroup transformGroup) {
+    public CubieNode(Cubie cubie, Group group) {
         this.cubie = cubie;
-        this.transformGroup = transformGroup;
+        this.group = group;
     }
 
     public Cubie cubie() {
         return cubie;
     }
 
-    public TransformGroup transformGroup() {
-        return transformGroup;
+    public Group group() {
+        return group;
     }
 }

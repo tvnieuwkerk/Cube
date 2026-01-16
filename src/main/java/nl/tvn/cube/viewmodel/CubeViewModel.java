@@ -2,19 +2,15 @@ package nl.tvn.cube.viewmodel;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.media.j3d.Appearance;
-import javax.media.j3d.BranchGroup;
-import javax.media.j3d.Material;
-import javax.media.j3d.Shape3D;
-import javax.media.j3d.Transform3D;
-import javax.media.j3d.TransformGroup;
-import javax.media.j3d.utils.geometry.Box;
-import javax.media.j3d.BoundingSphere;
-import javax.media.j3d.utils.universe.PlatformGeometry;
-import javax.vecmath.AxisAngle4f;
-import javax.vecmath.Color3f;
-import javax.vecmath.Vector3f;
+import javafx.geometry.Point3D;
+import javafx.scene.Group;
+import javafx.scene.Node;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.PhongMaterial;
+import javafx.scene.shape.Box;
+import javafx.scene.transform.Rotate;
 import nl.tvn.cube.model.Axis;
+import nl.tvn.cube.model.CubeColor;
 import nl.tvn.cube.model.CubeModel;
 import nl.tvn.cube.model.Cubie;
 import nl.tvn.cube.model.Face;
@@ -23,8 +19,8 @@ import nl.tvn.cube.model.TurnDirection;
 import nl.tvn.cube.util.Vector3i;
 
 public final class CubeViewModel {
-    private static final float CUBIE_SIZE = 0.3f;
-    private static final float CUBIE_GAP = 0.05f;
+    private static final double CUBIE_SIZE = 40;
+    private static final double CUBIE_GAP = 6;
 
     private final CubeModel cubeModel;
     private final List<CubieNode> cubieNodes;
@@ -34,19 +30,15 @@ public final class CubeViewModel {
         this.cubieNodes = new ArrayList<>();
     }
 
-    public BranchGroup buildScene() {
-        BranchGroup root = new BranchGroup();
+    public Group buildScene() {
+        Group root = new Group();
         for (Cubie cubie : cubeModel.cubies()) {
-            TransformGroup transformGroup = createCubieTransform(cubie.position());
-            Box box = createCubieBox(cubie);
-            transformGroup.addChild(box);
-            transformGroup.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
-            transformGroup.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
-            cubieNodes.add(new CubieNode(cubie, transformGroup));
-            root.addChild(transformGroup);
+            Group cubieGroup = createCubieGroup(cubie.position());
+            cubieGroup.getChildren().add(createCubieBox(cubie));
+            cubieNodes.add(new CubieNode(cubie, cubieGroup));
+            root.getChildren().add(cubieGroup);
         }
-        root.addChild(createLighting());
-        root.compile();
+        root.getChildren().addAll(createLighting());
         return root;
     }
 
@@ -119,16 +111,9 @@ public final class CubeViewModel {
     }
 
     private void applyRotation(CubieNode node, Axis axis, int angleSign) {
-        TransformGroup group = node.transformGroup();
-        Transform3D current = new Transform3D();
-        group.getTransform(current);
-
-        Transform3D rotation = new Transform3D();
-        rotation.setRotation(new AxisAngle4f(axisVector(axis), (float) (Math.PI / 2) * angleSign));
-
-        Transform3D updated = new Transform3D();
-        updated.mul(rotation, current);
-        group.setTransform(updated);
+        Group group = node.group();
+        Rotate rotate = new Rotate(90 * angleSign, 0, 0, 0, axisVector(axis));
+        group.getTransforms().add(rotate);
 
         Vector3i newPosition = rotatePosition(node.cubie().position(), axis, angleSign);
         node.cubie().setPosition(newPosition);
@@ -161,55 +146,73 @@ public final class CubeViewModel {
         };
     }
 
-    private TransformGroup createCubieTransform(Vector3i position) {
-        Transform3D transform = new Transform3D();
-        float spacing = CUBIE_SIZE + CUBIE_GAP;
-        transform.setTranslation(new Vector3f(position.x() * spacing, position.y() * spacing, position.z() * spacing));
-        TransformGroup group = new TransformGroup(transform);
-        group.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
-        group.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+    private Group createCubieGroup(Vector3i position) {
+        Group group = new Group();
+        double spacing = CUBIE_SIZE + CUBIE_GAP;
+        group.setTranslateX(position.x() * spacing);
+        group.setTranslateY(-position.y() * spacing);
+        group.setTranslateZ(position.z() * spacing);
         return group;
     }
 
-    private Box createCubieBox(Cubie cubie) {
-        Box box = new Box(CUBIE_SIZE / 2, CUBIE_SIZE / 2, CUBIE_SIZE / 2, Box.GENERATE_NORMALS, new Appearance());
-        setFaceAppearance(box.getShape(Box.FRONT), cubie.faceColors().get(Face.FRONT).color());
-        setFaceAppearance(box.getShape(Box.BACK), cubie.faceColors().get(Face.BACK).color());
-        setFaceAppearance(box.getShape(Box.RIGHT), cubie.faceColors().get(Face.RIGHT).color());
-        setFaceAppearance(box.getShape(Box.LEFT), cubie.faceColors().get(Face.LEFT).color());
-        setFaceAppearance(box.getShape(Box.TOP), cubie.faceColors().get(Face.UP).color());
-        setFaceAppearance(box.getShape(Box.BOTTOM), cubie.faceColors().get(Face.DOWN).color());
-        return box;
+    private Group createCubieBox(Cubie cubie) {
+        Group group = new Group();
+        double half = CUBIE_SIZE / 2;
+        double faceThickness = CUBIE_SIZE * 0.1;
+
+        group.getChildren().add(createFace(CUBIE_SIZE, CUBIE_SIZE, faceThickness, 0, 0, half,
+            cubie.faceColors().get(Face.FRONT)));
+        group.getChildren().add(createFace(CUBIE_SIZE, CUBIE_SIZE, faceThickness, 0, 0, -half,
+            cubie.faceColors().get(Face.BACK)));
+        group.getChildren().add(createFace(faceThickness, CUBIE_SIZE, CUBIE_SIZE, half, 0, 0,
+            cubie.faceColors().get(Face.RIGHT)));
+        group.getChildren().add(createFace(faceThickness, CUBIE_SIZE, CUBIE_SIZE, -half, 0, 0,
+            cubie.faceColors().get(Face.LEFT)));
+        group.getChildren().add(createFace(CUBIE_SIZE, faceThickness, CUBIE_SIZE, 0, -half, 0,
+            cubie.faceColors().get(Face.UP)));
+        group.getChildren().add(createFace(CUBIE_SIZE, faceThickness, CUBIE_SIZE, 0, half, 0,
+            cubie.faceColors().get(Face.DOWN)));
+        return group;
     }
 
-    private void setFaceAppearance(Shape3D shape, Color3f color) {
-        Appearance appearance = new Appearance();
-        Material material = new Material();
-        material.setDiffuseColor(color);
-        material.setAmbientColor(color);
-        material.setSpecularColor(new Color3f(0.2f, 0.2f, 0.2f));
-        appearance.setMaterial(material);
-        shape.setAppearance(appearance);
+    private Box createFace(double width, double height, double depth, double x, double y, double z, CubeColor color) {
+        Box face = new Box(width, height, depth);
+        PhongMaterial material = new PhongMaterial();
+        material.setDiffuseColor(mapColor(color));
+        material.setSpecularColor(Color.color(0.2, 0.2, 0.2));
+        face.setMaterial(material);
+        face.setTranslateX(x);
+        face.setTranslateY(y);
+        face.setTranslateZ(z);
+        return face;
     }
 
-    private PlatformGeometry createLighting() {
-        BoundingSphere bounds = new BoundingSphere();
-        javax.media.j3d.AmbientLight ambient = new javax.media.j3d.AmbientLight(new Color3f(0.4f, 0.4f, 0.4f));
-        ambient.setInfluencingBounds(bounds);
-        javax.media.j3d.DirectionalLight light = new javax.media.j3d.DirectionalLight(new Color3f(0.9f, 0.9f, 0.9f),
-            new Vector3f(-1f, -1f, -1f));
-        light.setInfluencingBounds(bounds);
-        PlatformGeometry geometry = new PlatformGeometry();
-        geometry.addChild(ambient);
-        geometry.addChild(light);
-        return geometry;
+    private Color mapColor(CubeColor color) {
+        return switch (color) {
+            case WHITE -> Color.WHITE;
+            case YELLOW -> Color.YELLOW;
+            case RED -> Color.RED;
+            case ORANGE -> Color.ORANGE;
+            case BLUE -> Color.DODGERBLUE;
+            case GREEN -> Color.GREEN;
+            case BLACK -> Color.BLACK;
+        };
     }
 
-    private Vector3f axisVector(Axis axis) {
+    private List<Node> createLighting() {
+        javafx.scene.AmbientLight ambient = new javafx.scene.AmbientLight(Color.color(0.4, 0.4, 0.4));
+        javafx.scene.PointLight light = new javafx.scene.PointLight(Color.WHITE);
+        light.setTranslateX(-300);
+        light.setTranslateY(-300);
+        light.setTranslateZ(-300);
+        return List.of(ambient, light);
+    }
+
+    private Point3D axisVector(Axis axis) {
         return switch (axis) {
-            case X -> new Vector3f(1f, 0f, 0f);
-            case Y -> new Vector3f(0f, 1f, 0f);
-            case Z -> new Vector3f(0f, 0f, 1f);
+            case X -> Rotate.X_AXIS;
+            case Y -> Rotate.Y_AXIS;
+            case Z -> Rotate.Z_AXIS;
         };
     }
 
