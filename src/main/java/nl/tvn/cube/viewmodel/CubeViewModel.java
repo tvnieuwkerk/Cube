@@ -116,7 +116,7 @@ public final class CubeViewModel {
     private void applyRotation(CubieNode node, Axis axis, int angleSign) {
         Group group = node.group();
         Rotate rotate = new Rotate(90 * angleSign, 0, 0, 0, axisVector(axis));
-        group.getTransforms().add(rotate);
+        group.getTransforms().add(0, rotate);
 
         Vector3i newPosition = rotatePosition(node.cubie().position(), axis, angleSign);
         node.cubie().setPosition(newPosition);
