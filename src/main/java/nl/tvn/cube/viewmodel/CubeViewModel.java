@@ -9,6 +9,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
 import javafx.scene.transform.Rotate;
+import javafx.scene.transform.Translate;
 import nl.tvn.cube.model.Axis;
 import nl.tvn.cube.model.CubeColor;
 import nl.tvn.cube.model.CubeModel;
@@ -33,9 +34,11 @@ public final class CubeViewModel {
     public Group buildScene() {
         Group root = new Group();
         for (Cubie cubie : cubeModel.cubies()) {
-            Group cubieGroup = createCubieGroup(cubie.position());
+            Group cubieGroup = new Group();
+            Translate translate = createTranslate(cubie.position());
+            cubieGroup.getTransforms().add(translate);
             cubieGroup.getChildren().add(createCubieBox(cubie));
-            cubieNodes.add(new CubieNode(cubie, cubieGroup));
+            cubieNodes.add(new CubieNode(cubie, cubieGroup, translate));
             root.getChildren().add(cubieGroup);
         }
         root.getChildren().addAll(createLighting());
@@ -117,6 +120,7 @@ public final class CubeViewModel {
 
         Vector3i newPosition = rotatePosition(node.cubie().position(), axis, angleSign);
         node.cubie().setPosition(newPosition);
+        updateTranslate(node.translate(), newPosition);
     }
 
     private Vector3i rotatePosition(Vector3i position, Axis axis, int angleSign) {
@@ -146,13 +150,16 @@ public final class CubeViewModel {
         };
     }
 
-    private Group createCubieGroup(Vector3i position) {
-        Group group = new Group();
+    private Translate createTranslate(Vector3i position) {
         double spacing = CUBIE_SIZE + CUBIE_GAP;
-        group.setTranslateX(position.x() * spacing);
-        group.setTranslateY(-position.y() * spacing);
-        group.setTranslateZ(position.z() * spacing);
-        return group;
+        return new Translate(position.x() * spacing, -position.y() * spacing, position.z() * spacing);
+    }
+
+    private void updateTranslate(Translate translate, Vector3i position) {
+        double spacing = CUBIE_SIZE + CUBIE_GAP;
+        translate.setX(position.x() * spacing);
+        translate.setY(-position.y() * spacing);
+        translate.setZ(position.z() * spacing);
     }
 
     private Group createCubieBox(Cubie cubie) {
