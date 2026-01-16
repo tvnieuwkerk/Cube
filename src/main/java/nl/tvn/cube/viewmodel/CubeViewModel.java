@@ -25,6 +25,7 @@ public final class CubeViewModel {
 
     private final CubeModel cubeModel;
     private final List<CubieNode> cubieNodes;
+    private Group rootGroup;
 
     public CubeViewModel() {
         this.cubeModel = new CubeModel();
@@ -32,17 +33,17 @@ public final class CubeViewModel {
     }
 
     public Group buildScene() {
-        Group root = new Group();
+        rootGroup = new Group();
         for (Cubie cubie : cubeModel.cubies()) {
             Group cubieGroup = new Group();
             Translate translate = createTranslate(cubie.position());
             cubieGroup.getTransforms().add(translate);
             cubieGroup.getChildren().add(createCubieBox(cubie));
             cubieNodes.add(new CubieNode(cubie, cubieGroup, translate));
-            root.getChildren().add(cubieGroup);
+            rootGroup.getChildren().add(cubieGroup);
         }
-        root.getChildren().addAll(createLighting());
-        return root;
+        rootGroup.getChildren().addAll(createLighting());
+        return rootGroup;
     }
 
     public void applyMove(Move move) {
@@ -88,9 +89,7 @@ public final class CubeViewModel {
         int directionSign = direction == TurnDirection.CLOCKWISE ? -1 : 1;
         int angleSign = directionSign * spec.axisSign() * spec.directionMultiplier();
         List<CubieNode> nodes = selectCubies(spec);
-        for (CubieNode node : nodes) {
-            applyRotation(node, spec.axis(), angleSign);
-        }
+        applyLayerRotation(nodes, spec.axis(), angleSign);
     }
 
     private List<CubieNode> selectCubies(RotationSpec spec) {
@@ -113,14 +112,37 @@ public final class CubeViewModel {
         return selected;
     }
 
-    private void applyRotation(CubieNode node, Axis axis, int angleSign) {
-        Group group = node.group();
+    private void applyLayerRotation(List<CubieNode> nodes, Axis axis, int angleSign) {
+        if (rootGroup == null) {
+            return;
+        }
+        Group layerGroup = new Group();
+        rootGroup.getChildren().add(layerGroup);
+        for (CubieNode node : nodes) {
+            rootGroup.getChildren().remove(node.group());
+            layerGroup.getChildren().add(node.group());
+        }
+
+        Rotate layerRotate = new Rotate(90 * angleSign, 0, 0, 0, axisVector(axis));
+        layerGroup.getTransforms().add(layerRotate);
+
+        for (CubieNode node : nodes) {
+            Vector3i newPosition = rotatePosition(node.cubie().position(), axis, angleSign);
+            node.cubie().setPosition(newPosition);
+            updateTranslate(node.translate(), newPosition);
+            applyCubieOrientation(node.group(), axis, angleSign);
+        }
+
+        for (CubieNode node : nodes) {
+            layerGroup.getChildren().remove(node.group());
+            rootGroup.getChildren().add(node.group());
+        }
+        rootGroup.getChildren().remove(layerGroup);
+    }
+
+    private void applyCubieOrientation(Group group, Axis axis, int angleSign) {
         Rotate rotate = new Rotate(90 * angleSign, 0, 0, 0, axisVector(axis));
         group.getTransforms().add(0, rotate);
-
-        Vector3i newPosition = rotatePosition(node.cubie().position(), axis, angleSign);
-        node.cubie().setPosition(newPosition);
-        updateTranslate(node.translate(), newPosition);
     }
 
     private Vector3i rotatePosition(Vector3i position, Axis axis, int angleSign) {
