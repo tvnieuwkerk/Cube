@@ -13,6 +13,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -42,6 +43,7 @@ public final class MainView {
     private Rotate cameraYaw;
     private Rotate cameraPitch;
     private Rotate cameraRoll;
+    private HelpWindow helpWindow;
 
     public MainView(CubeViewModel viewModel) {
         this.viewModel = viewModel;
@@ -49,11 +51,14 @@ public final class MainView {
         root.setFocusTraversable(true);
         root.setTop(buildControls());
         root.setCenter(buildScene());
-        root.setBottom(buildHelp());
     }
 
     public BorderPane root() {
         return root;
+    }
+
+    public void attachHelpWindow(HelpWindow helpWindow) {
+        this.helpWindow = helpWindow;
     }
 
     public void bindInput(Scene scene) {
@@ -131,20 +136,6 @@ public final class MainView {
         return container;
     }
 
-    private VBox buildHelp() {
-        Label title = new Label("Controls: F B R L U D (Shift = counter, Ctrl = 180°, Alt = wide)");
-        Label slices = new Label("Slices: M E S | Cube rotations: X Y Z | Camera: L/R arrows, Up/Down = X, PgUp/PgDn = Z");
-        Label buttons = new Label("Buttons: Reset | Randomize | Run algorithm (e.g., R U R' U', digits repeat moves)");
-        VBox help = new VBox(4, title, slices, buttons);
-        help.setPadding(new Insets(10));
-        help.setMinHeight(Region.USE_PREF_SIZE);
-        help.setStyle("-fx-background-color: #2b2b2b; -fx-text-fill: white;");
-        title.setTextFill(Color.WHITE);
-        slices.setTextFill(Color.LIGHTGRAY);
-        buttons.setTextFill(Color.LIGHTGRAY);
-        return help;
-    }
-
     private VBox buildControls() {
         Button reset = new Button("Reset");
         reset.setFocusTraversable(false);
@@ -179,7 +170,18 @@ public final class MainView {
         run.setOnAction(event -> runAlgorithm.run());
         algorithmInput.setOnAction(event -> runAlgorithm.run());
 
-        HBox controls = new HBox(10, reset, randomize, algorithmInput, run);
+        Button help = new Button("Help");
+        help.setFocusTraversable(false);
+        help.setOnAction(event -> {
+            if (helpWindow != null) {
+                helpWindow.show();
+            }
+        });
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        HBox controls = new HBox(10, reset, randomize, algorithmInput, run, spacer, help);
         controls.setPadding(new Insets(10));
         controls.setStyle("-fx-background-color: #252525;");
 

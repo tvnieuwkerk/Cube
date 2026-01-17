@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-01-17 16:44:05 +0000 - Refine help window layout and labels
+- Summary of change request: Clarify inverse move keys in labels, switch to three turn cards per row, shrink previews slightly, and auto-size the help window to its content.
+- Summary of change request implementation: Updated turn labels to mention Shift+Key inverse input, adjusted the grid to three columns, reduced preview sizing, and let the help window size to its scene on show.
+
+## 2026-01-17 16:22:40 +0000 - Expand help window content and labels
+- Summary of change request: Enlarge help previews, add M/E/S turns, extend labels with keyboard keys, and show camera key hints while keeping all content visible.
+- Summary of change request implementation: Increased help preview sizing and window dimensions, added slice moves and keyboard labels to the turn grid, and appended camera control hints below the turns.
+
+## 2026-01-17 15:56:05 +0000 - Add help window with animated turn previews
+- Summary of change request: Add a help button in the top row that opens a help window to the right of the main cube window showing all turn animations in a two-column layout.
+- Summary of change request implementation: Added a dedicated help window with mini cube previews that loop each face move and its inverse, wired a top-row help button to open and position the window beside the main stage, and removed the inline help section.
+
 ## 2026-01-17 15:40:09 +0000 - Focus root on startup and cube clicks
 - Summary of change request: Ensure the cube area/root gets focus on app start and when clicking the cube view so keyboard controls remain active.
 - Summary of change request implementation: Requested focus on the root after showing the stage and added mouse-click focus requests on the cube subscene/container.

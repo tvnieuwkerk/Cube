@@ -12,6 +12,7 @@ public final class MainApp extends Application {
         MainView view = new MainView(viewModel);
         Scene scene = new Scene(view.root(), 900, 700, true);
         view.bindInput(scene);
+        view.attachHelpWindow(new HelpWindow(stage));
 
         stage.setTitle("Rubik's Cube");
         stage.setScene(scene);
