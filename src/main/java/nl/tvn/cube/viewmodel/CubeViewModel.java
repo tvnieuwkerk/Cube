@@ -1,9 +1,12 @@
 package nl.tvn.cube.viewmodel;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -19,15 +22,18 @@ import nl.tvn.cube.view.CubieView;
 
 public final class CubeViewModel {
     private static final Duration TURN_DURATION = Duration.seconds(0.25);
+    private static final Duration RANDOM_TURN_DURATION = Duration.seconds(0.05);
     private final CubeModel model;
     private final Group cubeGroup;
     private final Map<CubieModel, CubieView> cubieViews;
+    private final Random random;
     private boolean animating;
 
     public CubeViewModel() {
         this.model = new CubeModel();
         this.cubeGroup = new Group();
         this.cubieViews = new HashMap<>();
+        this.random = new Random();
         buildViews();
     }
 
@@ -48,8 +54,37 @@ public final class CubeViewModel {
 
         int turns = normalizeTurns(move.quarterTurns());
         if (turns != 0) {
-            animateTurn(affected, move.axis(), turns);
+            animateTurn(affected, move.axis(), turns, TURN_DURATION);
         }
+    }
+
+    public void reset() {
+        if (animating) {
+            return;
+        }
+        model.reset();
+        for (CubieView view : cubieViews.values()) {
+            view.resetOrientation();
+            view.updateTranslation();
+        }
+    }
+
+    public void randomize() {
+        if (animating) {
+            return;
+        }
+        int turnCount = 50 + random.nextInt(51);
+        List<Move> moves = new ArrayList<>(turnCount);
+        RotationAxis[] axes = RotationAxis.values();
+        int[] layers = new int[] { -1, 1 };
+        int[] turns = new int[] { -1, 1, 2, -2 };
+        for (int i = 0; i < turnCount; i++) {
+            RotationAxis axis = axes[random.nextInt(axes.length)];
+            int layer = layers[random.nextInt(layers.length)];
+            int turn = turns[random.nextInt(turns.length)];
+            moves.add(new Move(axis, Set.of(layer), turn));
+        }
+        playMoveSequence(moves, RANDOM_TURN_DURATION);
     }
 
     private void buildViews() {
@@ -78,7 +113,7 @@ public final class CubeViewModel {
         }
     }
 
-    private void animateTurn(List<CubieModel> affected, RotationAxis axis, int turns) {
+    private void animateTurn(List<CubieModel> affected, RotationAxis axis, int turns, Duration duration) {
         List<CubieView> views = new ArrayList<>(affected.size());
         for (CubieModel cubie : affected) {
             views.add(cubieViews.get(cubie));
@@ -95,7 +130,7 @@ public final class CubeViewModel {
         double angle = rotationAngle(axis, turns);
         Timeline timeline = new Timeline(
             new KeyFrame(Duration.ZERO, new KeyValue(rotate.angleProperty(), 0)),
-            new KeyFrame(TURN_DURATION, new KeyValue(rotate.angleProperty(), angle))
+            new KeyFrame(duration, new KeyValue(rotate.angleProperty(), angle))
         );
         animating = true;
         timeline.setOnFinished(event -> {
@@ -104,6 +139,57 @@ public final class CubeViewModel {
             applyFinalTurns(affected, axis, turns);
             cubeGroup.getChildren().addAll(views);
             animating = false;
+        });
+        timeline.play();
+    }
+
+    private void playMoveSequence(List<Move> moves, Duration duration) {
+        Deque<Move> queue = new ArrayDeque<>(moves);
+        animating = true;
+        playNextMove(queue, duration);
+    }
+
+    private void playNextMove(Deque<Move> queue, Duration duration) {
+        Move move = queue.pollFirst();
+        if (move == null) {
+            animating = false;
+            return;
+        }
+        List<CubieModel> affected = new ArrayList<>();
+        for (CubieModel cubie : model.cubies()) {
+            if (isInLayer(cubie, move.axis(), move.layers())) {
+                affected.add(cubie);
+            }
+        }
+        int turns = normalizeTurns(move.quarterTurns());
+        if (turns == 0) {
+            playNextMove(queue, duration);
+            return;
+        }
+        List<CubieView> views = new ArrayList<>(affected.size());
+        for (CubieModel cubie : affected) {
+            views.add(cubieViews.get(cubie));
+        }
+        cubeGroup.getChildren().removeAll(views);
+
+        Group sliceGroup = new Group();
+        sliceGroup.getChildren().addAll(views);
+        cubeGroup.getChildren().add(sliceGroup);
+
+        Rotate rotate = new Rotate(0, axisVector(move.axis()));
+        sliceGroup.getTransforms().add(rotate);
+
+        double angle = rotationAngle(move.axis(), turns);
+        Timeline timeline = new Timeline(
+            new KeyFrame(Duration.ZERO, new KeyValue(rotate.angleProperty(), 0)),
+            new KeyFrame(duration, new KeyValue(rotate.angleProperty(), angle))
+        );
+        timeline.setOnFinished(event -> {
+            sliceGroup.getTransforms().clear();
+            cubeGroup.getChildren().remove(sliceGroup);
+            applyFinalTurns(affected, move.axis(), turns);
+            cubeGroup.getChildren().addAll(views);
+            playNextMove(queue, duration);
         });
         timeline.play();
     }

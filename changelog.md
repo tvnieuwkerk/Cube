@@ -47,3 +47,15 @@
 ## 2026-01-17 14:38:48 +0100 - Add camera pitch and roll controls
 - Summary of change request: Add camera rotation around the X and Z axes using the arrow and page keys.
 - Summary of change request implementation: Added pitch and roll transforms with key bindings and updated the help text to document the controls.
+
+## 2026-01-17 14:45:12 +0100 - Add reset/randomize controls
+- Summary of change request: Add Reset/Randomize buttons, restore the cube, and scramble with fast animations.
+- Summary of change request implementation: Added top controls wired to new reset and randomize actions, reset model/view state, and played a rapid random move sequence.
+
+## 2026-01-17 14:49:39 +0100 - Restore original camera key mapping
+- Summary of change request: Revert the camera rotation keys to the original left/right arrow mapping.
+- Summary of change request implementation: Removed pitch/roll key handlers and updated the help text to only mention left/right camera rotation.
+
+## 2026-01-17 15:04:19 +0100 - Disable button focus
+- Summary of change request: Prevent the Reset and Randomize buttons from stealing focus.
+- Summary of change request implementation: Disabled focus traversal on both buttons so arrow key handling stays on the scene.

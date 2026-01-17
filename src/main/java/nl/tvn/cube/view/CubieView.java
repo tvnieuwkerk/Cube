@@ -29,6 +29,10 @@ public final class CubieView extends Group {
         orientation.prepend(new Rotate(angleDegrees, axisVector(axis)));
     }
 
+    public void resetOrientation() {
+        orientation.setToIdentity();
+    }
+
     public void updateTranslation() {
         double step = CubeConstants.step();
         setTranslateX(model.coordinate().x() * step);

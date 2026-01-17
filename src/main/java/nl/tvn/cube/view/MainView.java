@@ -7,9 +7,11 @@ import javafx.scene.Camera;
 import javafx.scene.Scene;
 import javafx.scene.SceneAntialiasing;
 import javafx.scene.SubScene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -41,6 +43,7 @@ public final class MainView {
     public MainView(CubeViewModel viewModel) {
         this.viewModel = viewModel;
         this.root = new BorderPane();
+        root.setTop(buildControls());
         root.setCenter(buildScene());
         root.setBottom(buildHelp());
     }
@@ -125,13 +128,28 @@ public final class MainView {
     private VBox buildHelp() {
         Label title = new Label("Controls: F B R L U D (Shift = counter, Ctrl = 180°, Alt = wide)");
         Label slices = new Label("Slices: M E S | Cube rotations: X Y Z | Camera: L/R arrows, Up/Down = X, PgUp/PgDn = Z");
-        VBox help = new VBox(4, title, slices);
+        Label buttons = new Label("Buttons: Reset | Randomize");
+        VBox help = new VBox(4, title, slices, buttons);
         help.setPadding(new Insets(10));
         help.setMinHeight(Region.USE_PREF_SIZE);
         help.setStyle("-fx-background-color: #2b2b2b; -fx-text-fill: white;");
         title.setTextFill(Color.WHITE);
         slices.setTextFill(Color.LIGHTGRAY);
+        buttons.setTextFill(Color.LIGHTGRAY);
         return help;
+    }
+
+    private HBox buildControls() {
+        Button reset = new Button("Reset");
+        reset.setFocusTraversable(false);
+        reset.setOnAction(event -> viewModel.reset());
+        Button randomize = new Button("Randomize");
+        randomize.setFocusTraversable(false);
+        randomize.setOnAction(event -> viewModel.randomize());
+        HBox controls = new HBox(10, reset, randomize);
+        controls.setPadding(new Insets(10));
+        controls.setStyle("-fx-background-color: #252525;");
+        return controls;
     }
 
     private void rotateCameraYaw(double deltaDegrees) {

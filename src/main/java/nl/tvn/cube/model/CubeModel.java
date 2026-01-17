@@ -15,6 +15,21 @@ public final class CubeModel {
         return Collections.unmodifiableList(cubies);
     }
 
+    public void reset() {
+        int index = 0;
+        for (int x = -1; x <= 1; x++) {
+            for (int y = -1; y <= 1; y++) {
+                for (int z = -1; z <= 1; z++) {
+                    if (x == 0 && y == 0 && z == 0) {
+                        continue;
+                    }
+                    cubies.get(index).coordinate().set(x, y, z);
+                    index++;
+                }
+            }
+        }
+    }
+
     private List<CubieModel> buildIdentityCube() {
         List<CubieModel> result = new ArrayList<>();
         for (int x = -1; x <= 1; x++) {
