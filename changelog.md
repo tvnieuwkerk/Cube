@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-01-17 15:56:05 +0000 - Add help window with animated turn previews
+- Summary of change request: Add a help button in the top row that opens a help window to the right of the main cube window showing all turn animations in a two-column layout.
+- Summary of change request implementation: Added a dedicated help window with mini cube previews that loop each face move and its inverse, wired a top-row help button to open and position the window beside the main stage, and removed the inline help section.
+
 ## 2026-01-17 15:40:09 +0000 - Focus root on startup and cube clicks
 - Summary of change request: Ensure the cube area/root gets focus on app start and when clicking the cube view so keyboard controls remain active.
 - Summary of change request implementation: Requested focus on the root after showing the stage and added mouse-click focus requests on the cube subscene/container.
