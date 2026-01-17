@@ -59,6 +59,23 @@ public final class MoveFactory {
         };
     }
 
+    public static Optional<Move> fromNotation(char token, boolean counterClockwise) {
+        int baseTurns = counterClockwise ? -1 : 1;
+        int turns = baseTurns;
+        return switch (token) {
+            case 'F' -> Optional.of(faceMove(RotationAxis.Z, Set.of(1), turns));
+            case 'B' -> Optional.of(faceMove(RotationAxis.Z, Set.of(-1), -turns));
+            case 'R' -> Optional.of(faceMove(RotationAxis.X, Set.of(1), turns));
+            case 'L' -> Optional.of(faceMove(RotationAxis.X, Set.of(-1), -turns));
+            case 'U' -> Optional.of(faceMove(RotationAxis.Y, Set.of(1), turns));
+            case 'D' -> Optional.of(faceMove(RotationAxis.Y, Set.of(-1), -turns));
+            case 'M' -> Optional.of(faceMove(RotationAxis.X, Set.of(0), turns));
+            case 'E' -> Optional.of(faceMove(RotationAxis.Y, Set.of(0), turns));
+            case 'S' -> Optional.of(faceMove(RotationAxis.Z, Set.of(0), turns));
+            default -> Optional.empty();
+        };
+    }
+
     private static Move faceMove(RotationAxis axis, Set<Integer> layers, int turns) {
         return new Move(axis, layers, turns);
     }
