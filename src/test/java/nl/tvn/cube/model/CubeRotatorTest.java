@@ -3,9 +3,7 @@ package nl.tvn.cube.model;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Stream;
 import nl.tvn.cube.util.Vector3i;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -29,18 +27,17 @@ class CubeRotatorTest {
     void rotatesFaceLayerPositionsCorrectly(Face face, TurnDirection direction) {
         CubeModel model = new CubeModel();
         List<Cubie> cubies = model.cubies();
-        Map<Cubie, Vector3i> originalPositions = new HashMap<>();
-        for (Cubie cubie : cubies) {
-            originalPositions.put(cubie, cubie.position());
-        }
-
+        List<Vector3i> originalPositions = cubies.stream()
+            .map(Cubie::position)
+            .toList();
         RotationSpec spec = RotationSpec.fromFace(face);
         int angleSign = CubeRotator.angleSign(spec, direction);
         List<Cubie> selected = CubeRotator.selectCubies(cubies, spec);
         CubeRotator.rotateCubies(selected, spec.axis(), angleSign);
 
-        for (Cubie cubie : cubies) {
-            Vector3i expected = originalPositions.get(cubie);
+        for (int index = 0; index < cubies.size(); index++) {
+            Cubie cubie = cubies.get(index);
+            Vector3i expected = originalPositions.get(index);
             if (selected.contains(cubie)) {
                 expected = rotatePosition(expected, spec.axis(), angleSign);
             }
