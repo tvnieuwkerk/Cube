@@ -6,10 +6,10 @@
 - **JavaFX architecture:** MVVM-style separation with model (`nl.tvn.cube.model`), view model (`nl.tvn.cube.viewmodel`), and view (`nl.tvn.cube.view`).
 
 ## Mandatory tasks after finishing prompt
-- build the project with maven
-- create changelog.md if it not yet exits in root of project
-- add new section describing:
-  - date and timestamp
+- run all tests with maven
+- create changelog.md if it not yet exists in root of project
+- add new section at the top of the list describing:
+  - date and timestamp (UTC)
   - Title of change
   - summary of change request
   - summary of change request implementation
@@ -17,7 +17,7 @@
 ## Building project
 - **Build**
   ```bash
-  mvn package
+  mvn compile
   ```
 
 ## Testing
