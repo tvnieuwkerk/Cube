@@ -36,12 +36,10 @@ import nl.tvn.cube.viewmodel.CubeViewModel;
 public final class HelpWindow {
     private static final Duration TURN_DURATION = Duration.seconds(0.35);
     private static final Duration PAUSE_DURATION = Duration.seconds(0.2);
-    private static final double WINDOW_WIDTH = 720;
-    private static final double WINDOW_HEIGHT = 900;
     private static final double CARD_SPACING = 12;
     private static final double CARD_PADDING = 10;
-    private static final double CUBE_SCENE_SIZE = 320;
-    private static final double CUBE_SCALE = 0.7;
+    private static final double CUBE_SCENE_SIZE = 240;
+    private static final double CUBE_SCALE = 0.525;
     private static final double CAMERA_DISTANCE = 420;
     private static final double WINDOW_GAP = 12;
     private final Stage owner;
@@ -52,15 +50,14 @@ public final class HelpWindow {
         this.stage = new Stage();
         stage.initOwner(owner);
         stage.setTitle("Cube Help");
-        stage.setWidth(WINDOW_WIDTH);
-        stage.setHeight(WINDOW_HEIGHT);
-        stage.setScene(new Scene(buildContent(), WINDOW_WIDTH, WINDOW_HEIGHT, true));
+        stage.setScene(new Scene(buildContent(), 1, 1, true));
     }
 
     public void show() {
         if (!stage.isShowing()) {
             stage.show();
         }
+        stage.sizeToScene();
         positionToRightOfOwner();
         stage.toFront();
     }
@@ -95,22 +92,22 @@ public final class HelpWindow {
         grid.setVgap(CARD_SPACING);
 
         List<TurnDefinition> turns = List.of(
-            new TurnDefinition("U (Up) - Key: U", faceMove(RotationAxis.Y, 1, 1)),
-            new TurnDefinition("D (Down) - Key: D", faceMove(RotationAxis.Y, -1, -1)),
-            new TurnDefinition("R (Right) - Key: R", faceMove(RotationAxis.X, 1, 1)),
-            new TurnDefinition("L (Left) - Key: L", faceMove(RotationAxis.X, -1, -1)),
-            new TurnDefinition("F (Front) - Key: F", faceMove(RotationAxis.Z, 1, 1)),
-            new TurnDefinition("B (Back) - Key: B", faceMove(RotationAxis.Z, -1, -1)),
-            new TurnDefinition("M (Middle) - Key: M", faceMove(RotationAxis.X, 0, 1)),
-            new TurnDefinition("E (Equator) - Key: E", faceMove(RotationAxis.Y, 0, 1)),
-            new TurnDefinition("S (Standing) - Key: S", faceMove(RotationAxis.Z, 0, 1))
+            new TurnDefinition("U (Up) - U / Shift+U", faceMove(RotationAxis.Y, 1, 1)),
+            new TurnDefinition("D (Down) - D / Shift+D", faceMove(RotationAxis.Y, -1, -1)),
+            new TurnDefinition("R (Right) - R / Shift+R", faceMove(RotationAxis.X, 1, 1)),
+            new TurnDefinition("L (Left) - L / Shift+L", faceMove(RotationAxis.X, -1, -1)),
+            new TurnDefinition("F (Front) - F / Shift+F", faceMove(RotationAxis.Z, 1, 1)),
+            new TurnDefinition("B (Back) - B / Shift+B", faceMove(RotationAxis.Z, -1, -1)),
+            new TurnDefinition("M (Middle) - M / Shift+M", faceMove(RotationAxis.X, 0, 1)),
+            new TurnDefinition("E (Equator) - E / Shift+E", faceMove(RotationAxis.Y, 0, 1)),
+            new TurnDefinition("S (Standing) - S / Shift+S", faceMove(RotationAxis.Z, 0, 1))
         );
 
         for (int i = 0; i < turns.size(); i++) {
             TurnDefinition definition = turns.get(i);
             VBox card = buildTurnCard(definition);
-            int column = i % 2;
-            int row = i / 2;
+            int column = i % 3;
+            int row = i / 3;
             grid.add(card, column, row);
         }
 
@@ -118,7 +115,6 @@ public final class HelpWindow {
         cameraKeys.setTextFill(Color.LIGHTGRAY);
         cameraKeys.setStyle("-fx-font-size: 12px;");
         cameraKeys.setWrapText(true);
-        cameraKeys.setMaxWidth(WINDOW_WIDTH - CARD_SPACING * 2);
 
         VBox content = new VBox(CARD_SPACING, grid, cameraKeys);
         content.setPadding(new Insets(CARD_SPACING));

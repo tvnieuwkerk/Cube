@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-01-17 16:44:05 +0000 - Refine help window layout and labels
+- Summary of change request: Clarify inverse move keys in labels, switch to three turn cards per row, shrink previews slightly, and auto-size the help window to its content.
+- Summary of change request implementation: Updated turn labels to mention Shift+Key inverse input, adjusted the grid to three columns, reduced preview sizing, and let the help window size to its scene on show.
+
 ## 2026-01-17 16:22:40 +0000 - Expand help window content and labels
 - Summary of change request: Enlarge help previews, add M/E/S turns, extend labels with keyboard keys, and show camera key hints while keeping all content visible.
 - Summary of change request implementation: Increased help preview sizing and window dimensions, added slice moves and keyboard labels to the turn grid, and appended camera control hints below the turns.
