@@ -12,10 +12,12 @@ import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
 import nl.tvn.cube.model.Axis;
 import nl.tvn.cube.model.CubeColor;
+import nl.tvn.cube.model.CubeRotator;
 import nl.tvn.cube.model.CubeModel;
 import nl.tvn.cube.model.Cubie;
 import nl.tvn.cube.model.Face;
 import nl.tvn.cube.model.Move;
+import nl.tvn.cube.model.RotationSpec;
 import nl.tvn.cube.model.TurnDirection;
 import nl.tvn.cube.util.Vector3i;
 
@@ -86,8 +88,7 @@ public final class CubeViewModel {
     }
 
     private void rotateLayerOnce(RotationSpec spec, TurnDirection direction) {
-        int directionSign = direction == TurnDirection.CLOCKWISE ? -1 : 1;
-        int angleSign = directionSign * spec.axisSign() * spec.directionMultiplier();
+        int angleSign = CubeRotator.angleSign(spec, direction);
         List<CubieNode> nodes = selectCubies(spec);
         applyLayerRotation(nodes, spec.axis(), angleSign);
     }
@@ -126,9 +127,9 @@ public final class CubeViewModel {
         Rotate layerRotate = new Rotate(90 * angleSign, 0, 0, 0, axisVector(axis));
         layerGroup.getTransforms().add(layerRotate);
 
+        CubeRotator.rotateCubies(nodes.stream().map(CubieNode::cubie).toList(), axis, angleSign);
         for (CubieNode node : nodes) {
-            Vector3i newPosition = rotatePosition(node.cubie().position(), axis, angleSign);
-            node.cubie().setPosition(newPosition);
+            Vector3i newPosition = node.cubie().position();
             updateTranslate(node.translate(), newPosition);
             applyCubieOrientation(node.group(), axis, angleSign);
         }
@@ -143,33 +144,6 @@ public final class CubeViewModel {
     private void applyCubieOrientation(Group group, Axis axis, int angleSign) {
         Rotate rotate = new Rotate(90 * angleSign, 0, 0, 0, axisVector(axis));
         group.getTransforms().add(0, rotate);
-    }
-
-    private Vector3i rotatePosition(Vector3i position, Axis axis, int angleSign) {
-        Vector3i rotated = position;
-        int steps = Math.abs(angleSign);
-        int stepSign = angleSign >= 0 ? 1 : -1;
-        for (int i = 0; i < steps; i++) {
-            rotated = rotatePosition90(rotated, axis, stepSign);
-        }
-        return rotated;
-    }
-
-    private Vector3i rotatePosition90(Vector3i position, Axis axis, int angleSign) {
-        int x = position.x();
-        int y = position.y();
-        int z = position.z();
-        return switch (axis) {
-            case X -> angleSign > 0
-                ? new Vector3i(x, -z, y)
-                : new Vector3i(x, z, -y);
-            case Y -> angleSign > 0
-                ? new Vector3i(z, y, -x)
-                : new Vector3i(-z, y, x);
-            case Z -> angleSign > 0
-                ? new Vector3i(-y, x, z)
-                : new Vector3i(y, -x, z);
-        };
     }
 
     private Translate createTranslate(Vector3i position) {
@@ -245,40 +219,4 @@ public final class CubeViewModel {
         };
     }
 
-    private record RotationSpec(Axis axis, Integer layer, List<Integer> layers, int axisSign, int directionMultiplier) {
-        static RotationSpec fromFace(Face face) {
-            return switch (face) {
-                case FRONT -> new RotationSpec(Axis.Z, 1, List.of(1), 1, 1);
-                case BACK -> new RotationSpec(Axis.Z, -1, List.of(-1), -1, 1);
-                case RIGHT -> new RotationSpec(Axis.X, 1, List.of(1), 1, 1);
-                case LEFT -> new RotationSpec(Axis.X, -1, List.of(-1), -1, 1);
-                case UP -> new RotationSpec(Axis.Y, 1, List.of(1), 1, 1);
-                case DOWN -> new RotationSpec(Axis.Y, -1, List.of(-1), -1, 1);
-            };
-        }
-
-        static RotationSpec fromSlice(Axis axis) {
-            int directionMultiplier = switch (axis) {
-                case X -> -1;
-                case Y -> -1;
-                case Z -> 1;
-            };
-            return new RotationSpec(axis, 0, List.of(0), 1, directionMultiplier);
-        }
-
-        static RotationSpec fromWide(Face face) {
-            return switch (face) {
-                case FRONT -> new RotationSpec(Axis.Z, 1, List.of(1, 0), 1, 1);
-                case BACK -> new RotationSpec(Axis.Z, -1, List.of(-1, 0), -1, 1);
-                case RIGHT -> new RotationSpec(Axis.X, 1, List.of(1, 0), 1, 1);
-                case LEFT -> new RotationSpec(Axis.X, -1, List.of(-1, 0), -1, 1);
-                case UP -> new RotationSpec(Axis.Y, 1, List.of(1, 0), 1, 1);
-                case DOWN -> new RotationSpec(Axis.Y, -1, List.of(-1, 0), -1, 1);
-            };
-        }
-
-        static RotationSpec fromRotation(Axis axis) {
-            return new RotationSpec(axis, null, List.of(-1, 0, 1), 1, 1);
-        }
-    }
 }
