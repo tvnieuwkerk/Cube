@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-01-17 18:47:03 +0000 - Improve help window visibility
+- Summary of change request: Analyze the HelpWindow UI and ensure the window always shows all of its content.
+- Summary of change request implementation: Added a scrollable container for the help content and clamped the window size to the available screen bounds.
+
 ## 2026-01-17 16:44:05 +0000 - Refine help window layout and labels
 - Summary of change request: Clarify inverse move keys in labels, switch to three turn cards per row, shrink previews slightly, and auto-size the help window to its content.
 - Summary of change request implementation: Updated turn labels to mention Shift+Key inverse input, adjusted the grid to three columns, reduced preview sizing, and let the help window size to its scene on show.

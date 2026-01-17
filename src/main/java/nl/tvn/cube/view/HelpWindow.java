@@ -15,6 +15,7 @@ import javafx.scene.Scene;
 import javafx.scene.SceneAntialiasing;
 import javafx.scene.SubScene;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
@@ -57,7 +58,7 @@ public final class HelpWindow {
         if (!stage.isShowing()) {
             stage.show();
         }
-        stage.sizeToScene();
+        sizeToSceneWithinScreen();
         positionToRightOfOwner();
         stage.toFront();
     }
@@ -83,6 +84,19 @@ public final class HelpWindow {
             return screens.getFirst().getVisualBounds();
         }
         return Screen.getPrimary().getVisualBounds();
+    }
+
+    private void sizeToSceneWithinScreen() {
+        stage.sizeToScene();
+        Rectangle2D bounds = screenBoundsForOwner();
+        double maxWidth = bounds.getWidth();
+        double maxHeight = bounds.getHeight();
+        if (stage.getWidth() > maxWidth) {
+            stage.setWidth(maxWidth);
+        }
+        if (stage.getHeight() > maxHeight) {
+            stage.setHeight(maxHeight);
+        }
     }
 
     private StackPane buildContent() {
@@ -119,7 +133,15 @@ public final class HelpWindow {
         VBox content = new VBox(CARD_SPACING, grid, cameraKeys);
         content.setPadding(new Insets(CARD_SPACING));
 
-        StackPane container = new StackPane(content);
+        ScrollPane scrollPane = new ScrollPane(content);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        scrollPane.setPannable(true);
+        scrollPane.setBackground(new Background(new BackgroundFill(Color.web("#1f1f1f"), CornerRadii.EMPTY, Insets.EMPTY)));
+        scrollPane.setStyle("-fx-background: #1f1f1f; -fx-background-color: #1f1f1f;");
+
+        StackPane container = new StackPane(scrollPane);
         container.setBackground(new Background(new BackgroundFill(Color.web("#1f1f1f"), CornerRadii.EMPTY, Insets.EMPTY)));
         return container;
     }
