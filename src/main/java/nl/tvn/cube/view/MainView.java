@@ -9,6 +9,7 @@ import javafx.scene.SceneAntialiasing;
 import javafx.scene.SubScene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -22,6 +23,8 @@ import javafx.scene.AmbientLight;
 import javafx.scene.PointLight;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
+import nl.tvn.cube.viewmodel.AlgorithmParseResult;
+import nl.tvn.cube.viewmodel.AlgorithmParser;
 import nl.tvn.cube.viewmodel.CubeViewModel;
 import nl.tvn.cube.viewmodel.MoveFactory;
 
@@ -43,6 +46,7 @@ public final class MainView {
     public MainView(CubeViewModel viewModel) {
         this.viewModel = viewModel;
         this.root = new BorderPane();
+        root.setFocusTraversable(true);
         root.setTop(buildControls());
         root.setCenter(buildScene());
         root.setBottom(buildHelp());
@@ -110,8 +114,10 @@ public final class MainView {
         subScene.setFill(Color.web("#202020"));
         Camera camera = createCamera();
         subScene.setCamera(camera);
+        subScene.setOnMouseClicked(event -> root.requestFocus());
 
         StackPane container = new StackPane(subScene);
+        container.setOnMouseClicked(event -> root.requestFocus());
         container.setPadding(new Insets(SCENE_PADDING));
         container.setMinSize(0, 0);
         subScene.widthProperty().bind(Bindings.max(1, container.widthProperty().subtract(SCENE_PADDING * 2)));
@@ -128,7 +134,7 @@ public final class MainView {
     private VBox buildHelp() {
         Label title = new Label("Controls: F B R L U D (Shift = counter, Ctrl = 180°, Alt = wide)");
         Label slices = new Label("Slices: M E S | Cube rotations: X Y Z | Camera: L/R arrows, Up/Down = X, PgUp/PgDn = Z");
-        Label buttons = new Label("Buttons: Reset | Randomize");
+        Label buttons = new Label("Buttons: Reset | Randomize | Run algorithm (e.g., R U R' U', digits repeat moves)");
         VBox help = new VBox(4, title, slices, buttons);
         help.setPadding(new Insets(10));
         help.setMinHeight(Region.USE_PREF_SIZE);
@@ -139,17 +145,48 @@ public final class MainView {
         return help;
     }
 
-    private HBox buildControls() {
+    private VBox buildControls() {
         Button reset = new Button("Reset");
         reset.setFocusTraversable(false);
         reset.setOnAction(event -> viewModel.reset());
         Button randomize = new Button("Randomize");
         randomize.setFocusTraversable(false);
         randomize.setOnAction(event -> viewModel.randomize());
-        HBox controls = new HBox(10, reset, randomize);
+        TextField algorithmInput = new TextField();
+        algorithmInput.setPromptText("Algorithm (e.g., R U R' U')");
+        algorithmInput.setPrefColumnCount(24);
+
+        Label errorLabel = new Label();
+        errorLabel.setTextFill(Color.SALMON);
+        errorLabel.setVisible(false);
+        errorLabel.managedProperty().bind(errorLabel.visibleProperty());
+
+        Button run = new Button("Run");
+        run.setFocusTraversable(false);
+
+        Runnable runAlgorithm = () -> {
+            AlgorithmParseResult result = AlgorithmParser.parse(algorithmInput.getText());
+            if (!result.isValid()) {
+                errorLabel.setText(result.errorMessage());
+                errorLabel.setVisible(true);
+                return;
+            }
+            errorLabel.setVisible(false);
+            viewModel.applyMoves(result.moves());
+            root.requestFocus();
+        };
+
+        run.setOnAction(event -> runAlgorithm.run());
+        algorithmInput.setOnAction(event -> runAlgorithm.run());
+
+        HBox controls = new HBox(10, reset, randomize, algorithmInput, run);
         controls.setPadding(new Insets(10));
         controls.setStyle("-fx-background-color: #252525;");
-        return controls;
+
+        VBox wrapper = new VBox(6, controls, errorLabel);
+        wrapper.setStyle("-fx-background-color: #252525;");
+        wrapper.setPadding(new Insets(0, 10, 10, 10));
+        return wrapper;
     }
 
     private void rotateCameraYaw(double deltaDegrees) {

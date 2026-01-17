@@ -87,6 +87,13 @@ public final class CubeViewModel {
         playMoveSequence(moves, RANDOM_TURN_DURATION);
     }
 
+    public void applyMoves(List<Move> moves) {
+        if (animating || moves.isEmpty()) {
+            return;
+        }
+        playMoveSequence(moves, TURN_DURATION);
+    }
+
     private void buildViews() {
         for (CubieModel cubie : model.cubies()) {
             CubieView view = new CubieView(cubie);
