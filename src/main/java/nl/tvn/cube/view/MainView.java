@@ -8,6 +8,7 @@ import javafx.scene.Scene;
 import javafx.scene.SceneAntialiasing;
 import javafx.scene.SubScene;
 import javafx.scene.control.Label;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
@@ -27,9 +28,15 @@ public final class MainView {
     private static final double CUBE_FRUSTUM_MARGIN = 0.92;
     private static final double CAMERA_DISTANCE = 600.0;
     private static final double SCENE_PADDING = 10.0;
+    private static final double CAMERA_YAW_STEP = 8.0;
+    private static final double CAMERA_PITCH_STEP = 6.0;
+    private static final double CAMERA_ROLL_STEP = 6.0;
     private static final double SQRT_3 = Math.sqrt(3.0);
     private final CubeViewModel viewModel;
     private final BorderPane root;
+    private Rotate cameraYaw;
+    private Rotate cameraPitch;
+    private Rotate cameraRoll;
 
     public MainView(CubeViewModel viewModel) {
         this.viewModel = viewModel;
@@ -43,9 +50,41 @@ public final class MainView {
     }
 
     public void bindInput(Scene scene) {
-        scene.setOnKeyPressed(event -> MoveFactory.wideMove(event)
-            .or(() -> MoveFactory.fromKeyEvent(event))
-            .ifPresent(viewModel::applyMove));
+        scene.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.LEFT) {
+                rotateCameraYaw(-CAMERA_YAW_STEP);
+                event.consume();
+                return;
+            }
+            if (event.getCode() == KeyCode.RIGHT) {
+                rotateCameraYaw(CAMERA_YAW_STEP);
+                event.consume();
+                return;
+            }
+            if (event.getCode() == KeyCode.UP) {
+                rotateCameraPitch(-CAMERA_PITCH_STEP);
+                event.consume();
+                return;
+            }
+            if (event.getCode() == KeyCode.DOWN) {
+                rotateCameraPitch(CAMERA_PITCH_STEP);
+                event.consume();
+                return;
+            }
+            if (event.getCode() == KeyCode.PAGE_UP) {
+                rotateCameraRoll(-CAMERA_ROLL_STEP);
+                event.consume();
+                return;
+            }
+            if (event.getCode() == KeyCode.PAGE_DOWN) {
+                rotateCameraRoll(CAMERA_ROLL_STEP);
+                event.consume();
+                return;
+            }
+            MoveFactory.wideMove(event)
+                .or(() -> MoveFactory.fromKeyEvent(event))
+                .ifPresent(viewModel::applyMove);
+        });
     }
 
     private StackPane buildScene() {
@@ -66,7 +105,7 @@ public final class MainView {
 
         SubScene subScene = new SubScene(root3d, 900, 600, true, SceneAntialiasing.BALANCED);
         subScene.setFill(Color.web("#202020"));
-        Camera camera = CameraFactory.createCamera();
+        Camera camera = createCamera();
         subScene.setCamera(camera);
 
         StackPane container = new StackPane(subScene);
@@ -85,7 +124,7 @@ public final class MainView {
 
     private VBox buildHelp() {
         Label title = new Label("Controls: F B R L U D (Shift = counter, Ctrl = 180°, Alt = wide)");
-        Label slices = new Label("Slices: M E S | Cube rotations: X Y Z");
+        Label slices = new Label("Slices: M E S | Cube rotations: X Y Z | Camera: L/R arrows, Up/Down = X, PgUp/PgDn = Z");
         VBox help = new VBox(4, title, slices);
         help.setPadding(new Insets(10));
         help.setMinHeight(Region.USE_PREF_SIZE);
@@ -93,6 +132,27 @@ public final class MainView {
         title.setTextFill(Color.WHITE);
         slices.setTextFill(Color.LIGHTGRAY);
         return help;
+    }
+
+    private void rotateCameraYaw(double deltaDegrees) {
+        if (cameraYaw == null) {
+            return;
+        }
+        cameraYaw.setAngle(cameraYaw.getAngle() + deltaDegrees);
+    }
+
+    private void rotateCameraPitch(double deltaDegrees) {
+        if (cameraPitch == null) {
+            return;
+        }
+        cameraPitch.setAngle(cameraPitch.getAngle() + deltaDegrees);
+    }
+
+    private void rotateCameraRoll(double deltaDegrees) {
+        if (cameraRoll == null) {
+            return;
+        }
+        cameraRoll.setAngle(cameraRoll.getAngle() + deltaDegrees);
     }
 
     private Group buildAxes() {
@@ -135,17 +195,19 @@ public final class MainView {
         return scale;
     }
 
-    private static final class CameraFactory {
-        private static javafx.scene.Camera createCamera() {
-            javafx.scene.PerspectiveCamera camera = new javafx.scene.PerspectiveCamera(true);
-            camera.getTransforms().addAll(
-                new Rotate(-25, Rotate.X_AXIS),
-                new Rotate(45, Rotate.Y_AXIS),
-                new Translate(0, 0, -600)
-            );
-            camera.setNearClip(0.1);
-            camera.setFarClip(2000);
-            return camera;
-        }
+    private Camera createCamera() {
+        javafx.scene.PerspectiveCamera camera = new javafx.scene.PerspectiveCamera(true);
+        cameraPitch = new Rotate(-25, Rotate.X_AXIS);
+        cameraYaw = new Rotate(45, Rotate.Y_AXIS);
+        cameraRoll = new Rotate(0, Rotate.Z_AXIS);
+        camera.getTransforms().addAll(
+            cameraPitch,
+            cameraYaw,
+            cameraRoll,
+            new Translate(0, 0, -600)
+        );
+        camera.setNearClip(0.1);
+        camera.setFarClip(2000);
+        return camera;
     }
 }

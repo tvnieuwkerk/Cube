@@ -39,3 +39,11 @@
 ## 2026-01-17 13:58:37 +0100 - Add module descriptor
 - Summary of change request: Add a Java module file to the project.
 - Summary of change request implementation: Created `module-info.java` with JavaFX requirements and exported the app packages.
+
+## 2026-01-17 14:31:25 +0100 - Add camera yaw controls
+- Summary of change request: Allow rotating the camera around the Y axis with the left and right arrow keys and update the help text.
+- Summary of change request implementation: Added a yaw rotate transform that responds to arrow key input and documented the new controls in the help section.
+
+## 2026-01-17 14:38:48 +0100 - Add camera pitch and roll controls
+- Summary of change request: Add camera rotation around the X and Z axes using the arrow and page keys.
+- Summary of change request implementation: Added pitch and roll transforms with key bindings and updated the help text to document the controls.
