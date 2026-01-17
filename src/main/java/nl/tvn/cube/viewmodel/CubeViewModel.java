@@ -148,13 +148,13 @@ public final class CubeViewModel {
 
     private Translate createTranslate(Vector3i position) {
         double spacing = CUBIE_SIZE + CUBIE_GAP;
-        return new Translate(position.x() * spacing, position.y() * spacing, position.z() * spacing);
+        return new Translate(position.x() * spacing, -position.y() * spacing, position.z() * spacing);
     }
 
     private void updateTranslate(Translate translate, Vector3i position) {
         double spacing = CUBIE_SIZE + CUBIE_GAP;
         translate.setX(position.x() * spacing);
-        translate.setY(position.y() * spacing);
+        translate.setY(-position.y() * spacing);
         translate.setZ(position.z() * spacing);
     }
 
