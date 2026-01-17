@@ -124,7 +124,8 @@ public final class CubeViewModel {
             layerGroup.getChildren().add(node.group());
         }
 
-        Rotate layerRotate = new Rotate(90 * angleSign, 0, 0, 0, axisVector(axis));
+        int viewAngleSign = viewAngleSign(axis, angleSign);
+        Rotate layerRotate = new Rotate(90 * viewAngleSign, 0, 0, 0, axisVector(axis));
         layerGroup.getTransforms().add(layerRotate);
 
         CubeRotator.rotateCubies(nodes.stream().map(CubieNode::cubie).toList(), axis, angleSign);
@@ -142,7 +143,8 @@ public final class CubeViewModel {
     }
 
     private void applyCubieOrientation(Group group, Axis axis, int angleSign) {
-        Rotate rotate = new Rotate(90 * angleSign, 0, 0, 0, axisVector(axis));
+        int viewAngleSign = viewAngleSign(axis, angleSign);
+        Rotate rotate = new Rotate(90 * viewAngleSign, 0, 0, 0, axisVector(axis));
         group.getTransforms().add(0, rotate);
     }
 
@@ -217,6 +219,10 @@ public final class CubeViewModel {
             case Y -> Rotate.Y_AXIS;
             case Z -> Rotate.Z_AXIS;
         };
+    }
+
+    private int viewAngleSign(Axis axis, int angleSign) {
+        return axis == Axis.Y ? angleSign : -angleSign;
     }
 
 }
