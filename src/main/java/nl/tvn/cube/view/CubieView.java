@@ -35,37 +35,42 @@ public final class CubieView extends Group {
         double offset = CubeConstants.CUBIE_SIZE / 2 + CubeConstants.STICKER_THICKNESS / 2;
 
         if (model.coordinate().x() == 1) {
-            getChildren().add(stickerBox(stickerSize, stickerSize, CubeConstants.STICKER_THICKNESS,
-                offset, 0, 0, Color.RED));
+            getChildren().add(stickerOnX(stickerSize, offset, Color.RED));
         }
         if (model.coordinate().x() == -1) {
-            getChildren().add(stickerBox(stickerSize, stickerSize, CubeConstants.STICKER_THICKNESS,
-                -offset, 0, 0, Color.ORANGE));
+            getChildren().add(stickerOnX(stickerSize, -offset, Color.ORANGE));
         }
         if (model.coordinate().y() == 1) {
-            getChildren().add(stickerBox(stickerSize, CubeConstants.STICKER_THICKNESS, stickerSize,
-                0, -offset, 0, Color.WHITE));
+            getChildren().add(stickerOnY(stickerSize, -offset, Color.WHITE));
         }
         if (model.coordinate().y() == -1) {
-            getChildren().add(stickerBox(stickerSize, CubeConstants.STICKER_THICKNESS, stickerSize,
-                0, offset, 0, Color.YELLOW));
+            getChildren().add(stickerOnY(stickerSize, offset, Color.YELLOW));
         }
         if (model.coordinate().z() == 1) {
-            getChildren().add(stickerBox(stickerSize, stickerSize, CubeConstants.STICKER_THICKNESS,
-                0, 0, -offset, Color.GREEN));
+            getChildren().add(stickerOnZ(stickerSize, -offset, Color.GREEN));
         }
         if (model.coordinate().z() == -1) {
-            getChildren().add(stickerBox(stickerSize, stickerSize, CubeConstants.STICKER_THICKNESS,
-                0, 0, offset, Color.BLUE));
+            getChildren().add(stickerOnZ(stickerSize, offset, Color.BLUE));
         }
     }
 
-    private Box stickerBox(double width, double height, double depth,
-                           double x, double y, double z, Color color) {
-        Box sticker = new Box(width, height, depth);
+    private Box stickerOnX(double size, double x, Color color) {
+        Box sticker = new Box(CubeConstants.STICKER_THICKNESS, size, size);
         sticker.setMaterial(new PhongMaterial(color));
         sticker.setTranslateX(x);
+        return sticker;
+    }
+
+    private Box stickerOnY(double size, double y, Color color) {
+        Box sticker = new Box(size, CubeConstants.STICKER_THICKNESS, size);
+        sticker.setMaterial(new PhongMaterial(color));
         sticker.setTranslateY(y);
+        return sticker;
+    }
+
+    private Box stickerOnZ(double size, double z, Color color) {
+        Box sticker = new Box(size, size, CubeConstants.STICKER_THICKNESS);
+        sticker.setMaterial(new PhongMaterial(color));
         sticker.setTranslateZ(z);
         return sticker;
     }
