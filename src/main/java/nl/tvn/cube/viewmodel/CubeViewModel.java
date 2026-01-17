@@ -9,6 +9,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
 import javafx.scene.transform.Rotate;
+import javafx.scene.transform.Scale;
 import javafx.scene.transform.Translate;
 import nl.tvn.cube.model.Axis;
 import nl.tvn.cube.model.CubeColor;
@@ -36,6 +37,7 @@ public final class CubeViewModel {
 
     public Group buildScene() {
         rootGroup = new Group();
+        rootGroup.getTransforms().add(new Scale(1, -1, 1));
         for (Cubie cubie : cubeModel.cubies()) {
             Group cubieGroup = new Group();
             Translate translate = createTranslate(cubie.position());
@@ -124,8 +126,7 @@ public final class CubeViewModel {
             layerGroup.getChildren().add(node.group());
         }
 
-        int viewAngleSign = viewAngleSign(axis, angleSign);
-        Rotate layerRotate = new Rotate(90 * viewAngleSign, 0, 0, 0, axisVector(axis));
+        Rotate layerRotate = new Rotate(90 * angleSign, 0, 0, 0, axisVector(axis));
         layerGroup.getTransforms().add(layerRotate);
 
         CubeRotator.rotateCubies(nodes.stream().map(CubieNode::cubie).toList(), axis, angleSign);
@@ -143,20 +144,19 @@ public final class CubeViewModel {
     }
 
     private void applyCubieOrientation(Group group, Axis axis, int angleSign) {
-        int viewAngleSign = viewAngleSign(axis, angleSign);
-        Rotate rotate = new Rotate(90 * viewAngleSign, 0, 0, 0, axisVector(axis));
+        Rotate rotate = new Rotate(90 * angleSign, 0, 0, 0, axisVector(axis));
         group.getTransforms().add(0, rotate);
     }
 
     private Translate createTranslate(Vector3i position) {
         double spacing = CUBIE_SIZE + CUBIE_GAP;
-        return new Translate(position.x() * spacing, -position.y() * spacing, position.z() * spacing);
+        return new Translate(position.x() * spacing, position.y() * spacing, position.z() * spacing);
     }
 
     private void updateTranslate(Translate translate, Vector3i position) {
         double spacing = CUBIE_SIZE + CUBIE_GAP;
         translate.setX(position.x() * spacing);
-        translate.setY(-position.y() * spacing);
+        translate.setY(position.y() * spacing);
         translate.setZ(position.z() * spacing);
     }
 
@@ -219,10 +219,6 @@ public final class CubeViewModel {
             case Y -> Rotate.Y_AXIS;
             case Z -> Rotate.Z_AXIS;
         };
-    }
-
-    private int viewAngleSign(Axis axis, int angleSign) {
-        return axis == Axis.Y ? angleSign : -angleSign;
     }
 
 }
