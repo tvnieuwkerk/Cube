@@ -4,19 +4,29 @@ import javafx.scene.Group;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
+import javafx.scene.transform.Affine;
+import javafx.scene.transform.Rotate;
 import nl.tvn.cube.model.CubieModel;
+import nl.tvn.cube.model.RotationAxis;
 
 public final class CubieView extends Group {
     private final CubieModel model;
+    private final Affine orientation;
 
     public CubieView(CubieModel model) {
         this.model = model;
+        this.orientation = new Affine();
+        getTransforms().add(orientation);
         buildGeometry();
         updateTranslation();
     }
 
     public CubieModel model() {
         return model;
+    }
+
+    public void rotateAroundWorld(RotationAxis axis, double angleDegrees) {
+        orientation.prepend(new Rotate(angleDegrees, axisVector(axis)));
     }
 
     public void updateTranslation() {
@@ -73,5 +83,13 @@ public final class CubieView extends Group {
         sticker.setMaterial(new PhongMaterial(color));
         sticker.setTranslateZ(z);
         return sticker;
+    }
+
+    private static javafx.geometry.Point3D axisVector(RotationAxis axis) {
+        return switch (axis) {
+            case X -> Rotate.X_AXIS;
+            case Y -> Rotate.Y_AXIS;
+            case Z -> Rotate.Z_AXIS;
+        };
     }
 }

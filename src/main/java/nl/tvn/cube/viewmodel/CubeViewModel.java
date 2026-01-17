@@ -64,12 +64,7 @@ public final class CubeViewModel {
         double angle = rotationAngle(axis, turn);
         for (CubieModel cubie : affected) {
             CubieView view = cubieViews.get(cubie);
-            Rotate rotate = switch (axis) {
-                case X -> new Rotate(angle, Rotate.X_AXIS);
-                case Y -> new Rotate(angle, Rotate.Y_AXIS);
-                case Z -> new Rotate(angle, Rotate.Z_AXIS);
-            };
-            view.getTransforms().add(rotate);
+            view.rotateAroundWorld(axis, angle);
             rotateCoordinate(cubie, axis, turn);
             view.updateTranslation();
         }
