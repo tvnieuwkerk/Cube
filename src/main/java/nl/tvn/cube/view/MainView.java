@@ -46,6 +46,7 @@ public final class MainView {
     public MainView(CubeViewModel viewModel) {
         this.viewModel = viewModel;
         this.root = new BorderPane();
+        root.setFocusTraversable(true);
         root.setTop(buildControls());
         root.setCenter(buildScene());
         root.setBottom(buildHelp());
@@ -170,6 +171,7 @@ public final class MainView {
             }
             errorLabel.setVisible(false);
             viewModel.applyMoves(result.moves());
+            root.requestFocus();
         };
 
         run.setOnAction(event -> runAlgorithm.run());

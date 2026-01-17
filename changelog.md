@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-01-17 15:26:32 +0000 - Restore keyboard focus after running algorithms
+- Summary of change request: Ensure cube keyboard controls work after running an algorithm from the text field by restoring focus.
+- Summary of change request implementation: Made the root focusable and return focus to it after successfully running a parsed algorithm.
+
 ## 2026-01-17 14:52:19 +0000 - Add algorithm input parsing and execution
 - Summary of change request: Provide a text input for algorithm strings, validate allowed notation, show errors, and execute parsed moves on the cube.
 - Summary of change request implementation: Added parser/parse result utilities, wired a new algorithm input with error messaging to execute parsed move sequences, exposed a public move-sequence entry point, and added unit tests for parsing behavior.
