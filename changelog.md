@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-01-17 16:22:40 +0000 - Expand help window content and labels
+- Summary of change request: Enlarge help previews, add M/E/S turns, extend labels with keyboard keys, and show camera key hints while keeping all content visible.
+- Summary of change request implementation: Increased help preview sizing and window dimensions, added slice moves and keyboard labels to the turn grid, and appended camera control hints below the turns.
+
 ## 2026-01-17 15:56:05 +0000 - Add help window with animated turn previews
 - Summary of change request: Add a help button in the top row that opens a help window to the right of the main cube window showing all turn animations in a two-column layout.
 - Summary of change request implementation: Added a dedicated help window with mini cube previews that loop each face move and its inverse, wired a top-row help button to open and position the window beside the main stage, and removed the inline help section.
