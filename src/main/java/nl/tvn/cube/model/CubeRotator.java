@@ -37,6 +37,7 @@ public final class CubeRotator {
         for (Cubie cubie : cubies) {
             Vector3i newPosition = rotatePosition(cubie.position(), axis, angleSign);
             cubie.setPosition(newPosition);
+            cubie.orientation().rotate(axis, angleSign);
         }
     }
 

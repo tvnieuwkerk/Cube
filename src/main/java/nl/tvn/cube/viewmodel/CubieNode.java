@@ -1,6 +1,7 @@
 package nl.tvn.cube.viewmodel;
 
 import javafx.scene.Group;
+import javafx.scene.transform.Affine;
 import javafx.scene.transform.Translate;
 import nl.tvn.cube.model.Cubie;
 
@@ -8,11 +9,13 @@ public final class CubieNode {
     private final Cubie cubie;
     private final Group group;
     private final Translate translate;
+    private final Affine orientation;
 
-    public CubieNode(Cubie cubie, Group group, Translate translate) {
+    public CubieNode(Cubie cubie, Group group, Translate translate, Affine orientation) {
         this.cubie = cubie;
         this.group = group;
         this.translate = translate;
+        this.orientation = orientation;
     }
 
     public Cubie cubie() {
@@ -25,5 +28,9 @@ public final class CubieNode {
 
     public Translate translate() {
         return translate;
+    }
+
+    public Affine orientation() {
+        return orientation;
     }
 }

@@ -8,10 +8,12 @@ import nl.tvn.cube.util.Vector3i;
 public final class Cubie {
     private Vector3i position;
     private final Map<Face, CubeColor> faceColors;
+    private final Orientation orientation;
 
     public Cubie(Vector3i position, Map<Face, CubeColor> faceColors) {
         this.position = position;
         this.faceColors = new EnumMap<>(faceColors);
+        this.orientation = Orientation.identity();
     }
 
     public Vector3i position() {
@@ -24,6 +26,10 @@ public final class Cubie {
 
     public Map<Face, CubeColor> faceColors() {
         return faceColors;
+    }
+
+    public Orientation orientation() {
+        return orientation;
     }
 
     @Override

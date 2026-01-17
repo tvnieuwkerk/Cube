@@ -2,13 +2,12 @@ package nl.tvn.cube.viewmodel;
 
 import java.util.ArrayList;
 import java.util.List;
-import javafx.geometry.Point3D;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
-import javafx.scene.transform.Rotate;
+import javafx.scene.transform.Affine;
 import javafx.scene.transform.Scale;
 import javafx.scene.transform.Translate;
 import nl.tvn.cube.model.Axis;
@@ -41,9 +40,11 @@ public final class CubeViewModel {
         for (Cubie cubie : cubeModel.cubies()) {
             Group cubieGroup = new Group();
             Translate translate = createTranslate(cubie.position());
-            cubieGroup.getTransforms().add(translate);
+            Affine orientation = new Affine();
+            updateOrientation(orientation, cubie);
+            cubieGroup.getTransforms().addAll(orientation, translate);
             cubieGroup.getChildren().add(createCubieBox(cubie));
-            cubieNodes.add(new CubieNode(cubie, cubieGroup, translate));
+            cubieNodes.add(new CubieNode(cubie, cubieGroup, translate, orientation));
             rootGroup.getChildren().add(cubieGroup);
         }
         rootGroup.getChildren().addAll(createLighting());
@@ -116,36 +117,12 @@ public final class CubeViewModel {
     }
 
     private void applyLayerRotation(List<CubieNode> nodes, Axis axis, int angleSign) {
-        if (rootGroup == null) {
-            return;
-        }
-        Group layerGroup = new Group();
-        rootGroup.getChildren().add(layerGroup);
-        for (CubieNode node : nodes) {
-            rootGroup.getChildren().remove(node.group());
-            layerGroup.getChildren().add(node.group());
-        }
-
-        Rotate layerRotate = new Rotate(90 * angleSign, 0, 0, 0, axisVector(axis));
-        layerGroup.getTransforms().add(layerRotate);
-
         CubeRotator.rotateCubies(nodes.stream().map(CubieNode::cubie).toList(), axis, angleSign);
         for (CubieNode node : nodes) {
             Vector3i newPosition = node.cubie().position();
             updateTranslate(node.translate(), newPosition);
-            applyCubieOrientation(node.group(), axis, angleSign);
+            updateOrientation(node.orientation(), node.cubie());
         }
-
-        for (CubieNode node : nodes) {
-            layerGroup.getChildren().remove(node.group());
-            rootGroup.getChildren().add(node.group());
-        }
-        rootGroup.getChildren().remove(layerGroup);
-    }
-
-    private void applyCubieOrientation(Group group, Axis axis, int angleSign) {
-        Rotate rotate = new Rotate(90 * angleSign, 0, 0, 0, axisVector(axis));
-        group.getTransforms().add(0, rotate);
     }
 
     private Translate createTranslate(Vector3i position) {
@@ -213,12 +190,15 @@ public final class CubeViewModel {
         return List.of(ambient, light);
     }
 
-    private Point3D axisVector(Axis axis) {
-        return switch (axis) {
-            case X -> Rotate.X_AXIS;
-            case Y -> Rotate.Y_AXIS;
-            case Z -> Rotate.Z_AXIS;
-        };
+    private void updateOrientation(Affine affine, Cubie cubie) {
+        var xAxis = cubie.orientation().xAxis();
+        var yAxis = cubie.orientation().yAxis();
+        var zAxis = cubie.orientation().zAxis();
+        affine.setToTransform(
+            xAxis.x(), yAxis.x(), zAxis.x(), 0,
+            xAxis.y(), yAxis.y(), zAxis.y(), 0,
+            xAxis.z(), yAxis.z(), zAxis.z(), 0
+        );
     }
 
 }
