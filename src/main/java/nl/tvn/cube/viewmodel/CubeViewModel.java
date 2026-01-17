@@ -61,7 +61,7 @@ public final class CubeViewModel {
     }
 
     private void applyQuarterTurn(List<CubieModel> affected, RotationAxis axis, int turn) {
-        double angle = -90.0 * turn;
+        double angle = rotationAngle(axis, turn);
         for (CubieModel cubie : affected) {
             CubieView view = cubieViews.get(cubie);
             Rotate rotate = switch (axis) {
@@ -73,6 +73,14 @@ public final class CubeViewModel {
             rotateCoordinate(cubie, axis, turn);
             view.updateTranslation();
         }
+    }
+
+    private double rotationAngle(RotationAxis axis, int turn) {
+        double baseAngle = 90.0 * turn;
+        return switch (axis) {
+            case X -> -baseAngle;
+            case Y, Z -> baseAngle;
+        };
     }
 
     private void rotateCoordinate(CubieModel cubie, RotationAxis axis, int turn) {
