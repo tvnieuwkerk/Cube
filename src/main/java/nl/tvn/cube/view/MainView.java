@@ -114,8 +114,10 @@ public final class MainView {
         subScene.setFill(Color.web("#202020"));
         Camera camera = createCamera();
         subScene.setCamera(camera);
+        subScene.setOnMouseClicked(event -> root.requestFocus());
 
         StackPane container = new StackPane(subScene);
+        container.setOnMouseClicked(event -> root.requestFocus());
         container.setPadding(new Insets(SCENE_PADDING));
         container.setMinSize(0, 0);
         subScene.widthProperty().bind(Bindings.max(1, container.widthProperty().subtract(SCENE_PADDING * 2)));

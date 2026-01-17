@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-01-17 15:40:09 +0000 - Focus root on startup and cube clicks
+- Summary of change request: Ensure the cube area/root gets focus on app start and when clicking the cube view so keyboard controls remain active.
+- Summary of change request implementation: Requested focus on the root after showing the stage and added mouse-click focus requests on the cube subscene/container.
+
 ## 2026-01-17 15:26:32 +0000 - Restore keyboard focus after running algorithms
 - Summary of change request: Ensure cube keyboard controls work after running an algorithm from the text field by restoring focus.
 - Summary of change request implementation: Made the root focusable and return focus to it after successfully running a parsed algorithm.

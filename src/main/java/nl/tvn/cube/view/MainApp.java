@@ -16,6 +16,7 @@ public final class MainApp extends Application {
         stage.setTitle("Rubik's Cube");
         stage.setScene(scene);
         stage.show();
+        view.root().requestFocus();
     }
 
     public static void main(String[] args) {
