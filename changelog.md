@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-01-18 17:00:22 +0000 - Fix R/L keyboard direction
+- Summary of change request: Correct inverted R/L keyboard rotations.
+- Summary of change request implementation: Removed the extra X-axis turn inversion for keyboard shortcuts so R/L follow expected notation.
+
 ## 2026-01-18 16:54:44 +0000 - Unify drag direction helper
 - Summary of change request: Use a shared helper for face and slice drag direction to keep their behavior aligned.
 - Summary of change request implementation: Consolidated direction selection under a single helper method used by both face rotation and slice dragging.
