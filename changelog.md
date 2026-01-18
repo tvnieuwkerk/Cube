@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-01-18 13:09:52 +0000 - Make beginner validation orientation-invariant
+- Summary of change request: Ensure beginner step validation ignores cube orientation by treating the white-center face as the top.
+- Summary of change request implementation: Added logical-to-actual orientation mapping based on center colors, updated step checks to use logical coordinates, and covered orientation invariance in tests.
+
 ## 2026-01-18 12:47:16 +0000 - Add beginner method step validation and status icons
 - Summary of change request: Build a validator for each beginner method step, run validation after moves/algorithms, show step status icons, and add unit tests per step.
 - Summary of change request implementation: Added cube state orientation tracking and a beginner method validator with step-specific checks, wired validation status into the UI with icons, and covered each step with new unit tests.

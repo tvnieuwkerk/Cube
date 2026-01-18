@@ -3,6 +3,9 @@ package nl.tvn.cube.model;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Set;
+import nl.tvn.cube.model.Move;
+import nl.tvn.cube.model.RotationAxis;
 import nl.tvn.cube.viewmodel.MoveFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -93,6 +96,19 @@ class BeginnerMethodValidatorTest {
     void yellowCornerOrientationFailsAfterRightTurn() {
         applyMove('R');
         assertFalse(validator.isStepSolved(BeginnerStep.YELLOW_CORNER_ORIENTATION));
+    }
+
+    @Test
+    void validationIsOrientationInvariant() {
+        Move rotation = new Move(RotationAxis.X, Set.of(-1, 0, 1), 1);
+        CubeRotator.applyMove(model, rotation);
+        assertTrue(validator.isStepSolved(BeginnerStep.WHITE_CROSS));
+        assertTrue(validator.isStepSolved(BeginnerStep.WHITE_CORNERS));
+        assertTrue(validator.isStepSolved(BeginnerStep.MIDDLE_LAYER));
+        assertTrue(validator.isStepSolved(BeginnerStep.YELLOW_CROSS));
+        assertTrue(validator.isStepSolved(BeginnerStep.YELLOW_EDGE_ALIGNMENT));
+        assertTrue(validator.isStepSolved(BeginnerStep.YELLOW_CORNER_POSITION));
+        assertTrue(validator.isStepSolved(BeginnerStep.YELLOW_CORNER_ORIENTATION));
     }
 
     private void applyMove(char token) {
