@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-01-18 19:41:30 +0000 - Update README with new functionality
+- Summary of change request: Mention Codex tooling in the README and document missing features.
+- Summary of change request implementation: Expanded the README description and usage details to cover Codex provenance, mouse gestures, algorithm runner, help window, and beginner method guidance.
+
 ## 2026-01-18 19:28:11 +0000 - Enlarge selection outline
 - Summary of change request: Make the face selection overlay surround the selected face more clearly.
 - Summary of change request implementation: Increased the outline face size with extra margin and pushed it farther from the cube surface.
