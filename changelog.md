@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-01-18 16:54:44 +0000 - Unify drag direction helper
+- Summary of change request: Use a shared helper for face and slice drag direction to keep their behavior aligned.
+- Summary of change request implementation: Consolidated direction selection under a single helper method used by both face rotation and slice dragging.
+
 ## 2026-01-18 16:36:04 +0000 - Stabilize face drag direction
 - Summary of change request: Make face-rotation drags consistent regardless of the initial mouse direction.
 - Summary of change request implementation: Derived the face drag orientation from the camera basis instead of the initial delta, so the signed mouse delta is applied only once.

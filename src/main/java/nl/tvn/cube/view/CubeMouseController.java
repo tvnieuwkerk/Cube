@@ -126,7 +126,7 @@ public final class CubeMouseController {
         activeAxis = selectedFace.axis();
         activeLayer = selectedFace.layer();
         int layerDirection = activeLayer > 0 ? 1 : -1;
-        activeDirection = resolveDragDirection(activeAxis, true, layerDirection);
+        activeDirection = computeDragDirection(activeAxis, true, layerDirection);
         activeRotate = new Rotate(0, axisVector(activeAxis));
         cubeGroup.getTransforms().add(activeRotate);
         state = InteractionState.FACE_ROTATE_DRAG;
@@ -141,7 +141,7 @@ public final class CubeMouseController {
         DragMapping mapping = dragMapping(pressPick, horizontal);
         activeAxis = mapping.axis();
         activeLayer = mapping.layer();
-        activeDirection = resolveDragDirection(mapping.axis(), horizontal, mapping.direction());
+        activeDirection = computeDragDirection(mapping.axis(), horizontal, mapping.direction());
         activeSlice = viewModel.beginInteractiveSlice(activeAxis, activeLayer);
         if (activeSlice == null) {
             state = InteractionState.IDLE;
@@ -252,7 +252,7 @@ public final class CubeMouseController {
         return node.localToScene(localPoint);
     }
 
-    private int resolveDragDirection(RotationAxis axis, boolean horizontal, int fallback) {
+    private int computeDragDirection(RotationAxis axis, boolean horizontal, int fallback) {
         if (pressPointScene == null || scene.getCamera() == null) {
             return fallback;
         }
