@@ -247,18 +247,39 @@ public final class CubeMouseController {
 
     private static RotationAxis axisFromPick(MouseEvent event) {
         javafx.geometry.Point3D normal = event.getPickResult().getIntersectedNormal();
-        if (normal == null) {
+        javafx.scene.Node node = event.getPickResult().getIntersectedNode();
+        if (normal != null) {
+            javafx.geometry.Point3D sceneNormal = node.getLocalToSceneTransform().deltaTransform(normal);
+            double absX = Math.abs(sceneNormal.getX());
+            double absY = Math.abs(sceneNormal.getY());
+            double absZ = Math.abs(sceneNormal.getZ());
+            if (absX >= absY && absX >= absZ) {
+                return RotationAxis.X;
+            }
+            if (absY >= absZ) {
+                return RotationAxis.Y;
+            }
+            return RotationAxis.Z;
+        }
+        javafx.geometry.Point3D point = event.getPickResult().getIntersectedPoint();
+        if (point == null) {
             return null;
         }
-        javafx.scene.Node node = event.getPickResult().getIntersectedNode();
-        javafx.geometry.Point3D sceneNormal = node.getLocalToSceneTransform().deltaTransform(normal);
-        double absX = Math.abs(sceneNormal.getX());
-        double absY = Math.abs(sceneNormal.getY());
-        double absZ = Math.abs(sceneNormal.getZ());
-        if (absX >= absY && absX >= absZ) {
+        javafx.geometry.Point3D localPoint = node.sceneToLocal(point);
+        javafx.geometry.Bounds bounds = node.getBoundsInLocal();
+        double distToMinX = Math.abs(localPoint.getX() - bounds.getMinX());
+        double distToMaxX = Math.abs(bounds.getMaxX() - localPoint.getX());
+        double distToMinY = Math.abs(localPoint.getY() - bounds.getMinY());
+        double distToMaxY = Math.abs(bounds.getMaxY() - localPoint.getY());
+        double distToMinZ = Math.abs(localPoint.getZ() - bounds.getMinZ());
+        double distToMaxZ = Math.abs(bounds.getMaxZ() - localPoint.getZ());
+        double minX = Math.min(distToMinX, distToMaxX);
+        double minY = Math.min(distToMinY, distToMaxY);
+        double minZ = Math.min(distToMinZ, distToMaxZ);
+        if (minX <= minY && minX <= minZ) {
             return RotationAxis.X;
         }
-        if (absY >= absZ) {
+        if (minY <= minZ) {
             return RotationAxis.Y;
         }
         return RotationAxis.Z;

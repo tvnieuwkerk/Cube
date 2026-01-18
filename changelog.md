@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-01-18 15:18:12 +0000 - Fix mouse pick axis fallback
+- Summary of change request: Restore mouse gestures when pick normals are unavailable.
+- Summary of change request implementation: Added a fallback that derives the face axis from the intersected point and local bounds when the pick normal is null.
+
 ## 2026-01-18 15:13:48 +0000 - Restore mouse gesture picking
 - Summary of change request: Fix mouse gesture picking so clicks are recognized after recent input changes.
 - Summary of change request implementation: Attached cubie models to the cubie view and added parent traversal for pick lookups to ensure mouse hits resolve to the correct cubie.
