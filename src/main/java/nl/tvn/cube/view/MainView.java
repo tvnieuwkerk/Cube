@@ -17,6 +17,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.geometry.Pos;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
@@ -24,6 +25,7 @@ import javafx.scene.AmbientLight;
 import javafx.scene.PointLight;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
+import java.util.Locale;
 import nl.tvn.cube.viewmodel.AlgorithmParseResult;
 import nl.tvn.cube.viewmodel.AlgorithmParser;
 import nl.tvn.cube.viewmodel.CubeViewModel;
@@ -121,10 +123,13 @@ public final class MainView {
         subScene.setCamera(camera);
         subScene.setOnMouseClicked(event -> root.requestFocus());
 
-        StackPane container = new StackPane(subScene);
+        Label cameraOrientationLabel = buildCameraOrientationLabel();
+        StackPane container = new StackPane(subScene, cameraOrientationLabel);
         container.setOnMouseClicked(event -> root.requestFocus());
         container.setPadding(new Insets(SCENE_PADDING));
         container.setMinSize(0, 0);
+        StackPane.setAlignment(cameraOrientationLabel, Pos.BOTTOM_RIGHT);
+        StackPane.setMargin(cameraOrientationLabel, new Insets(0, 6, 6, 0));
         subScene.widthProperty().bind(Bindings.max(1, container.widthProperty().subtract(SCENE_PADDING * 2)));
         subScene.heightProperty().bind(Bindings.max(1, container.heightProperty().subtract(SCENE_PADDING * 2)));
         cubeGroup.scaleXProperty().bind(Bindings.createDoubleBinding(
@@ -256,7 +261,7 @@ public final class MainView {
         javafx.scene.PerspectiveCamera camera = new javafx.scene.PerspectiveCamera(true);
         cameraPitch = new Rotate(-25, Rotate.X_AXIS);
         cameraYaw = new Rotate(45, Rotate.Y_AXIS);
-        cameraRoll = new Rotate(0, Rotate.Z_AXIS);
+        cameraRoll = new Rotate(18, Rotate.Z_AXIS);
         camera.getTransforms().addAll(
             cameraPitch,
             cameraYaw,
@@ -266,5 +271,30 @@ public final class MainView {
         camera.setNearClip(0.1);
         camera.setFarClip(2000);
         return camera;
+    }
+
+    private Label buildCameraOrientationLabel() {
+        Label label = new Label();
+        label.setMouseTransparent(true);
+        label.setFocusTraversable(false);
+        label.setStyle("-fx-background-color: rgba(0,0,0,0.6); -fx-text-fill: white; -fx-padding: 4 8; -fx-font-size: 11px;");
+        label.textProperty().bind(Bindings.createStringBinding(
+            () -> String.format(Locale.US,
+                "Yaw %.1f deg | Pitch %.1f deg | Roll %.1f deg",
+                normalizeAngle(cameraYaw.getAngle()),
+                normalizeAngle(cameraPitch.getAngle()),
+                normalizeAngle(cameraRoll.getAngle())),
+            cameraYaw.angleProperty(),
+            cameraPitch.angleProperty(),
+            cameraRoll.angleProperty()));
+        return label;
+    }
+
+    private static double normalizeAngle(double angleDegrees) {
+        double normalized = angleDegrees % 360.0;
+        if (normalized < 0) {
+            normalized += 360.0;
+        }
+        return normalized;
     }
 }

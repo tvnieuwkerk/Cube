@@ -15,12 +15,9 @@ import javafx.scene.Scene;
 import javafx.scene.SceneAntialiasing;
 import javafx.scene.SubScene;
 import javafx.scene.control.Label;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.CornerRadii;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
@@ -44,24 +41,20 @@ public final class HelpWindow {
     private static final double WINDOW_GAP = 12;
     private final Stage owner;
     private final Stage stage;
-    private boolean hasSizedToScene;
 
     public HelpWindow(Stage owner) {
         this.owner = owner;
         this.stage = new Stage();
         stage.initOwner(owner);
         stage.setTitle("Cube Help");
-        stage.setScene(new Scene(buildContent(), 1, 1, true));
+        stage.setScene(new Scene(buildContent()));
     }
 
     public void show() {
         if (!stage.isShowing()) {
             stage.show();
-            if (!hasSizedToScene) {
-                stage.sizeToScene();
-                hasSizedToScene = true;
-            }
         }
+        stage.sizeToScene();
         positionToRightOfOwner();
         stage.toFront();
     }
@@ -90,6 +83,17 @@ public final class HelpWindow {
     }
 
     private StackPane buildContent() {
+        TabPane tabPane = new TabPane();
+        tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+
+        Tab shortcutsTab = new Tab("Shortcuts", buildHelpContent());
+        Tab aboutTab = new Tab("About", buildAboutContent());
+        tabPane.getTabs().addAll(shortcutsTab, aboutTab);
+
+        return new StackPane(tabPane);
+    }
+
+    private StackPane buildHelpContent() {
         GridPane grid = new GridPane();
         grid.setPadding(Insets.EMPTY);
         grid.setHgap(CARD_SPACING);
@@ -114,7 +118,6 @@ public final class HelpWindow {
             int row = i / 3;
             grid.add(card, column, row);
         }
-
         Label cameraKeys = new Label("Camera: Left/Right = Yaw | Up/Down = Pitch | PgUp/PgDn = Roll");
         cameraKeys.setTextFill(Color.LIGHTGRAY);
         cameraKeys.setStyle("-fx-font-size: 12px;");
@@ -123,9 +126,24 @@ public final class HelpWindow {
         VBox content = new VBox(CARD_SPACING, grid, cameraKeys);
         content.setPadding(new Insets(CARD_SPACING));
 
-        StackPane container = new StackPane(content);
-        container.setBackground(new Background(new BackgroundFill(Color.web("#1f1f1f"), CornerRadii.EMPTY, Insets.EMPTY)));
-        return container;
+        StackPane helpContainer = new StackPane(content);
+        helpContainer.setBackground(new Background(new BackgroundFill(Color.web("#1f1f1f"), CornerRadii.EMPTY, Insets.EMPTY)));
+        return helpContainer;
+    }
+
+    private StackPane buildAboutContent() {
+        Label description = new Label("Cube is an interactive Rubik's Cube simulator that lets you view, rotate, and"
+            + " manipulate the cube using keyboard shortcuts and algorithm notation.");
+        description.setTextFill(Color.LIGHTGRAY);
+        description.setStyle("-fx-font-size: 12px;");
+        description.setWrapText(true);
+
+        VBox content = new VBox(12, description);
+        content.setPadding(new Insets(CARD_SPACING));
+
+        StackPane aboutContainer = new StackPane(content);
+        aboutContainer.setBackground(new Background(new BackgroundFill(Color.web("#1f1f1f"), CornerRadii.EMPTY, Insets.EMPTY)));
+        return aboutContainer;
     }
 
     private VBox buildTurnCard(TurnDefinition definition) {

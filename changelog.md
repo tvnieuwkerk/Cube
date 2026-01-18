@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-01-18 11:54:45 +0000 - Add shortcuts/about tabs in help window
+- Summary of change request: Rename the first help tab to Shortcuts and add an About tab with a general app description.
+- Summary of change request implementation: Updated the tab title and added an About tab containing descriptive text about the cube app.
+
 ## 2026-01-18 10:37:17 +0000 - Preserve help window size when reactivated
 - Summary of change request: Prevent the help window from shrinking to 1x1 when the help button is clicked while it is already open.
 - Summary of change request implementation: Only size the help window to its scene the first time it is shown, preserving any existing window dimensions on subsequent activations.
