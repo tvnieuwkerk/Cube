@@ -9,6 +9,7 @@ import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
 import javafx.scene.shape.DrawMode;
 import javafx.scene.transform.Rotate;
+import nl.tvn.cube.model.CubieModel;
 import nl.tvn.cube.model.Move;
 import nl.tvn.cube.model.RotationAxis;
 import nl.tvn.cube.viewmodel.CubeViewModel;
@@ -225,10 +226,41 @@ public final class CubeMouseController {
             return null;
         }
         Object data = event.getPickResult().getIntersectedNode().getUserData();
-        if (data instanceof FacePickInfo pickInfo) {
-            return pickInfo;
+        if (!(data instanceof CubieModel model)) {
+            return null;
         }
-        return null;
+        RotationAxis axis = axisFromPick(event);
+        if (axis == null) {
+            return null;
+        }
+        int x = model.coordinate().x();
+        int y = model.coordinate().y();
+        int z = model.coordinate().z();
+        int layer = switch (axis) {
+            case X -> x;
+            case Y -> y;
+            case Z -> z;
+        };
+        return new FacePickInfo(axis, layer, x, y, z);
+    }
+
+    private static RotationAxis axisFromPick(MouseEvent event) {
+        javafx.geometry.Point3D normal = event.getPickResult().getIntersectedNormal();
+        if (normal == null) {
+            return null;
+        }
+        javafx.scene.Node node = event.getPickResult().getIntersectedNode();
+        javafx.geometry.Point3D sceneNormal = node.getLocalToSceneTransform().deltaTransform(normal);
+        double absX = Math.abs(sceneNormal.getX());
+        double absY = Math.abs(sceneNormal.getY());
+        double absZ = Math.abs(sceneNormal.getZ());
+        if (absX >= absY && absX >= absZ) {
+            return RotationAxis.X;
+        }
+        if (absY >= absZ) {
+            return RotationAxis.Y;
+        }
+        return RotationAxis.Z;
     }
 
     private static DragMapping dragMapping(FacePickInfo pick, boolean horizontal, double deltaX, double deltaY) {

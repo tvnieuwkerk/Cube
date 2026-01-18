@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-01-18 15:06:17 +0000 - Fix mouse pick coordinates after rotations
+- Summary of change request: Ensure mouse slice drags use the cubie's current position instead of its original location.
+- Summary of change request implementation: Changed sticker pick metadata to reference the cubie model at click time and compute face axis/layer from the pick normal and current coordinates.
+
 ## 2026-01-18 14:50:38 +0000 - Add mouse gestures for cube interactions
 - Summary of change request: Implement mouse-driven cube interactions with face selection, slice dragging, rotation snapping, and scroll zoom.
 - Summary of change request implementation: Added mouse gesture handling with face selection outlines, interactive slice rotation with snapping to 90-degree turns, whole-cube rotation from selected faces, scroll-based camera zoom, and updated help text.
