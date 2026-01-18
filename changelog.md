@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-01-18 19:28:11 +0000 - Enlarge selection outline
+- Summary of change request: Make the face selection overlay surround the selected face more clearly.
+- Summary of change request implementation: Increased the outline face size with extra margin and pushed it farther from the cube surface.
+
 ## 2026-01-18 19:16:16 +0000 - Fix selection overlay side
 - Summary of change request: Ensure the face selection outline is placed on the correct side of the axis after scrambling.
 - Summary of change request implementation: Derived the layer sign from the cubie coordinate instead of the sticker normal when generating FacePickInfo.

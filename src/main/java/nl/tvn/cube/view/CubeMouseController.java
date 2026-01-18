@@ -205,8 +205,10 @@ public final class CubeMouseController {
 
     private Box buildSelectionOutline(RotationAxis axis, int layer) {
         double faceSize = CubeConstants.CUBIE_SIZE * 3 + CubeConstants.CUBIE_GAP * 2;
+        double outlineMargin = CubeConstants.STICKER_THICKNESS * 2.0;
+        faceSize += outlineMargin * 2;
         double thickness = CubeConstants.STICKER_THICKNESS * 1.5;
-        double offset = CubeConstants.STICKER_THICKNESS * 1.25;
+        double offset = CubeConstants.STICKER_THICKNESS * 1.75;
         Box outline;
         switch (axis) {
             case X -> {
