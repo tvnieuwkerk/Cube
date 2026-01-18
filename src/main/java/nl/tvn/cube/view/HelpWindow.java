@@ -6,8 +6,11 @@ import java.util.function.Consumer;
 import javafx.animation.Animation;
 import javafx.animation.PauseTransition;
 import javafx.animation.SequentialTransition;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Rectangle2D;
+import javafx.geometry.Pos;
 import javafx.scene.AmbientLight;
 import javafx.scene.Camera;
 import javafx.scene.Group;
@@ -29,6 +32,7 @@ import javafx.scene.transform.Translate;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import nl.tvn.cube.model.BeginnerMethodStep;
 import nl.tvn.cube.model.Move;
 import nl.tvn.cube.model.RotationAxis;
 import nl.tvn.cube.viewmodel.CubeViewModel;
@@ -44,10 +48,12 @@ public final class HelpWindow {
     private static final double WINDOW_GAP = 12;
     private final Stage owner;
     private final Stage stage;
+    private final CubeViewModel viewModel;
     private final Consumer<String> algorithmRunner;
 
-    public HelpWindow(Stage owner, Consumer<String> algorithmRunner) {
+    public HelpWindow(Stage owner, CubeViewModel viewModel, Consumer<String> algorithmRunner) {
         this.owner = owner;
+        this.viewModel = viewModel;
         this.algorithmRunner = algorithmRunner;
         this.stage = new Stage();
         stage.initOwner(owner);
@@ -160,6 +166,7 @@ public final class HelpWindow {
             buildIntroCard(),
             buildStepCard(
                 "1. White Cross (Top Face)",
+                viewModel.beginnerStepProperty(BeginnerMethodStep.WHITE_CROSS),
                 "Goal:",
                 List.of(
                     "Make a cross on the white face",
@@ -176,6 +183,7 @@ public final class HelpWindow {
             ),
             buildStepCard(
                 "2. White Corners (Finish First Layer)",
+                viewModel.beginnerStepProperty(BeginnerMethodStep.WHITE_CORNERS),
                 "Goal:",
                 List.of(
                     "Place the four white corners correctly",
@@ -191,6 +199,7 @@ public final class HelpWindow {
             ),
             buildStepCard(
                 "3. Middle Layer Edges",
+                viewModel.beginnerStepProperty(BeginnerMethodStep.MIDDLE_LAYER_EDGES),
                 "Goal:",
                 List.of(
                     "Solve the four edge pieces in the middle layer",
@@ -206,6 +215,7 @@ public final class HelpWindow {
             ),
             buildStepCard(
                 "4. Yellow Cross (Last Layer – Part 1)",
+                viewModel.beginnerStepProperty(BeginnerMethodStep.YELLOW_CROSS),
                 "Goal:",
                 List.of(
                     "Form a yellow cross on the bottom face",
@@ -220,6 +230,7 @@ public final class HelpWindow {
             ),
             buildStepCard(
                 "5. Orient Yellow Edges (Last Layer – Part 2)",
+                viewModel.beginnerStepProperty(BeginnerMethodStep.YELLOW_EDGE_ALIGNMENT),
                 "Goal:",
                 List.of(
                     "Match the yellow cross edges with side centers"
@@ -231,6 +242,7 @@ public final class HelpWindow {
             ),
             buildStepCard(
                 "6. Position Yellow Corners (Last Layer – Part 3)",
+                viewModel.beginnerStepProperty(BeginnerMethodStep.YELLOW_CORNER_POSITION),
                 "Goal:",
                 List.of(
                     "Put yellow corners in the correct location",
@@ -245,6 +257,7 @@ public final class HelpWindow {
             ),
             buildStepCard(
                 "7. Orient Yellow Corners (Finish the Cube)",
+                viewModel.beginnerStepProperty(BeginnerMethodStep.YELLOW_CORNER_ORIENTATION),
                 "Goal:",
                 List.of(
                     "Twist yellow corners so the cube is fully solved"
@@ -283,6 +296,7 @@ public final class HelpWindow {
 
     private VBox buildStepCard(
         String titleText,
+        ReadOnlyBooleanProperty status,
         String goalHeader,
         List<String> goalItems,
         String notesHeader,
@@ -290,9 +304,8 @@ public final class HelpWindow {
         String algorithmHeader,
         List<AlgorithmDefinition> algorithms
     ) {
-        Label title = buildCardTitle(titleText);
         VBox content = new VBox(8);
-        content.getChildren().add(title);
+        content.getChildren().add(buildStepHeader(titleText, status));
         content.getChildren().add(buildSection(goalHeader, goalItems));
         if (!notesItems.isEmpty()) {
             content.getChildren().add(buildSection(notesHeader, notesItems));
@@ -418,6 +431,32 @@ public final class HelpWindow {
         card.setPadding(new Insets(CARD_PADDING));
         card.setBackground(new Background(new BackgroundFill(Color.web("#262626"), new CornerRadii(8), Insets.EMPTY)));
         return card;
+    }
+
+    private HBox buildStepHeader(String text, ReadOnlyBooleanProperty status) {
+        Label label = buildCardTitle(text);
+        Label indicator = buildStatusIndicator(status);
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        HBox header = new HBox(8, label, spacer, indicator);
+        header.setAlignment(Pos.CENTER_LEFT);
+        return header;
+    }
+
+    private Label buildStatusIndicator(ReadOnlyBooleanProperty status) {
+        Label indicator = new Label();
+        indicator.setMinSize(18, 18);
+        indicator.setPrefSize(18, 18);
+        indicator.setMaxSize(18, 18);
+        indicator.setAlignment(Pos.CENTER);
+        indicator.textProperty().bind(Bindings.when(status).then("✓").otherwise("✕"));
+        indicator.styleProperty().bind(Bindings.when(status)
+            .then("-fx-background-color: #2e7d32; -fx-text-fill: white; -fx-font-size: 12px;"
+                + " -fx-font-weight: bold; -fx-background-radius: 9;")
+            .otherwise("-fx-background-color: #6b2f2f; -fx-text-fill: #f5f5f5; -fx-font-size: 12px;"
+                + " -fx-font-weight: bold; -fx-background-radius: 9;"));
+        return indicator;
     }
 
     private VBox buildTurnCard(TurnDefinition definition) {
