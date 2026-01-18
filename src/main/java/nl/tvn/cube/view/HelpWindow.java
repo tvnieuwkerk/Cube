@@ -134,8 +134,13 @@ public final class HelpWindow {
         cameraKeys.setTextFill(Color.LIGHTGRAY);
         cameraKeys.setStyle("-fx-font-size: 12px;");
         cameraKeys.setWrapText(true);
+        Label mouseHints = new Label("Mouse: Click face to select | Click again and drag to rotate cube | "
+            + "Click-drag a cubie to turn its row/column | Scroll to zoom");
+        mouseHints.setTextFill(Color.LIGHTGRAY);
+        mouseHints.setStyle("-fx-font-size: 12px;");
+        mouseHints.setWrapText(true);
 
-        VBox content = new VBox(CARD_SPACING, grid, cameraKeys);
+        VBox content = new VBox(CARD_SPACING, grid, cameraKeys, mouseHints);
         content.setPadding(new Insets(CARD_SPACING));
 
         StackPane helpContainer = new StackPane(content);

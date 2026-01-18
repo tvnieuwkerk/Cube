@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-01-18 14:50:38 +0000 - Add mouse gestures for cube interactions
+- Summary of change request: Implement mouse-driven cube interactions with face selection, slice dragging, rotation snapping, and scroll zoom.
+- Summary of change request implementation: Added mouse gesture handling with face selection outlines, interactive slice rotation with snapping to 90-degree turns, whole-cube rotation from selected faces, scroll-based camera zoom, and updated help text.
+
 ## 2026-01-18 13:52:24 +0000 - Correct cube face color assignments
 - Summary of change request: Fix the cube face colors so the official opposite color pairs are applied correctly.
 - Summary of change request implementation: Swapped the front/back face colors to ensure the blue/green pair matches the official opposite configuration.

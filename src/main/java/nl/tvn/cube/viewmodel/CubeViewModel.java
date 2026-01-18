@@ -36,6 +36,7 @@ public final class CubeViewModel {
     private final BeginnerMethodValidator beginnerValidator;
     private final Map<BeginnerMethodStep, BooleanProperty> beginnerStepStatus;
     private boolean animating;
+    private boolean interacting;
 
     public CubeViewModel() {
         this.model = new CubeModel();
@@ -59,8 +60,12 @@ public final class CubeViewModel {
         return beginnerStepStatus.get(step);
     }
 
+    public boolean isBusy() {
+        return animating || interacting;
+    }
+
     public void applyMove(Move move) {
-        if (animating) {
+        if (animating || interacting) {
             return;
         }
         List<CubieModel> affected = new ArrayList<>();
@@ -77,7 +82,7 @@ public final class CubeViewModel {
     }
 
     public void reset() {
-        if (animating) {
+        if (animating || interacting) {
             return;
         }
         model.reset();
@@ -89,7 +94,7 @@ public final class CubeViewModel {
     }
 
     public void randomize() {
-        if (animating) {
+        if (animating || interacting) {
             return;
         }
         int turnCount = 50 + random.nextInt(51);
@@ -107,10 +112,62 @@ public final class CubeViewModel {
     }
 
     public void applyMoves(List<Move> moves) {
-        if (animating || moves.isEmpty()) {
+        if (animating || interacting || moves.isEmpty()) {
             return;
         }
         playMoveSequence(moves, TURN_DURATION);
+    }
+
+    public InteractiveSlice beginInteractiveSlice(RotationAxis axis, int layer) {
+        if (animating || interacting) {
+            return null;
+        }
+        List<CubieModel> affected = new ArrayList<>();
+        for (CubieModel cubie : model.cubies()) {
+            if (isInLayer(cubie, axis, Set.of(layer))) {
+                affected.add(cubie);
+            }
+        }
+        if (affected.isEmpty()) {
+            return null;
+        }
+        List<CubieView> views = new ArrayList<>(affected.size());
+        for (CubieModel cubie : affected) {
+            views.add(cubieViews.get(cubie));
+        }
+        cubeGroup.getChildren().removeAll(views);
+
+        Group sliceGroup = new Group();
+        sliceGroup.getChildren().addAll(views);
+        cubeGroup.getChildren().add(sliceGroup);
+
+        Rotate rotate = new Rotate(0, axisVector(axis));
+        sliceGroup.getTransforms().add(rotate);
+        interacting = true;
+        return new InteractiveSlice(axis, layer, rotate, sliceGroup, views, affected);
+    }
+
+    public void updateInteractiveSlice(InteractiveSlice slice, double angleDegrees) {
+        if (slice == null) {
+            return;
+        }
+        slice.rotate().setAngle(angleDegrees);
+    }
+
+    public void finishInteractiveSlice(InteractiveSlice slice, int turns) {
+        if (slice == null) {
+            return;
+        }
+        slice.sliceGroup().getTransforms().clear();
+        cubeGroup.getChildren().remove(slice.sliceGroup());
+        if (turns != 0) {
+            applyFinalTurns(slice.affected(), slice.axis(), normalizeTurns(turns));
+        }
+        cubeGroup.getChildren().addAll(slice.views());
+        interacting = false;
+        if (!animating) {
+            updateBeginnerValidation();
+        }
     }
 
     private void buildViews() {
@@ -299,5 +356,15 @@ public final class CubeViewModel {
             case Y -> Rotate.Y_AXIS;
             case Z -> Rotate.Z_AXIS;
         };
+    }
+
+    public record InteractiveSlice(
+        RotationAxis axis,
+        int layer,
+        Rotate rotate,
+        Group sliceGroup,
+        List<CubieView> views,
+        List<CubieModel> affected
+    ) {
     }
 }

@@ -47,6 +47,7 @@ public final class MainView {
     private Rotate cameraYaw;
     private Rotate cameraPitch;
     private Rotate cameraRoll;
+    private Translate cameraDistance;
     private HelpWindow helpWindow;
 
     public MainView(CubeViewModel viewModel) {
@@ -132,6 +133,7 @@ public final class MainView {
         Camera camera = createCamera();
         subScene.setCamera(camera);
         subScene.setOnMouseClicked(event -> root.requestFocus());
+        new CubeMouseController(subScene, cubeGroup, viewModel);
 
         Label cameraOrientationLabel = buildCameraOrientationLabel();
         StackPane container = new StackPane(subScene, cameraOrientationLabel);
@@ -145,9 +147,11 @@ public final class MainView {
         cubeGroup.scaleXProperty().bind(Bindings.createDoubleBinding(
             () -> cubeScale(camera, subScene.getWidth(), subScene.getHeight()),
             subScene.widthProperty(),
-            subScene.heightProperty()));
+            subScene.heightProperty(),
+            cameraDistance.zProperty()));
         cubeGroup.scaleYProperty().bind(cubeGroup.scaleXProperty());
         cubeGroup.scaleZProperty().bind(cubeGroup.scaleXProperty());
+        subScene.setOnScroll(event -> adjustZoom(event.getDeltaY()));
         return container;
     }
 
@@ -255,7 +259,8 @@ public final class MainView {
         double scale = targetSize / baseCubeDiagonal;
         if (camera instanceof javafx.scene.PerspectiveCamera perspectiveCamera) {
             double fov = perspectiveCamera.getFieldOfView();
-            double maxWorldHeight = 2 * CAMERA_DISTANCE * Math.tan(Math.toRadians(fov / 2));
+            double distance = cameraDistance != null ? Math.abs(cameraDistance.getZ()) : CAMERA_DISTANCE;
+            double maxWorldHeight = 2 * distance * Math.tan(Math.toRadians(fov / 2));
             double safeHeight = Math.max(1, height);
             double safeWidth = Math.max(1, width);
             double aspectRatio = safeWidth / safeHeight;
@@ -272,11 +277,12 @@ public final class MainView {
         cameraPitch = new Rotate(-25, Rotate.X_AXIS);
         cameraYaw = new Rotate(45, Rotate.Y_AXIS);
         cameraRoll = new Rotate(18, Rotate.Z_AXIS);
+        cameraDistance = new Translate(0, 0, -CAMERA_DISTANCE);
         camera.getTransforms().addAll(
             cameraPitch,
             cameraYaw,
             cameraRoll,
-            new Translate(0, 0, -600)
+            cameraDistance
         );
         camera.setNearClip(0.1);
         camera.setFarClip(2000);
@@ -306,5 +312,22 @@ public final class MainView {
             normalized += 360.0;
         }
         return normalized;
+    }
+
+    private void adjustZoom(double deltaY) {
+        if (cameraDistance == null) {
+            return;
+        }
+        double step = deltaY * 0.8;
+        double next = cameraDistance.getZ() + step;
+        double min = -1200;
+        double max = -250;
+        if (next < min) {
+            next = min;
+        }
+        if (next > max) {
+            next = max;
+        }
+        cameraDistance.setZ(next);
     }
 }

@@ -49,22 +49,34 @@ public final class CubieView extends Group {
         double offset = CubeConstants.CUBIE_SIZE / 2 + CubeConstants.STICKER_THICKNESS / 2;
 
         if (model.coordinate().x() == 1) {
-            getChildren().add(stickerOnX(stickerSize, offset, Color.RED));
+            Box sticker = stickerOnX(stickerSize, offset, Color.RED);
+            sticker.setUserData(new FacePickInfo(RotationAxis.X, 1, model.coordinate().x(), model.coordinate().y(), model.coordinate().z()));
+            getChildren().add(sticker);
         }
         if (model.coordinate().x() == -1) {
-            getChildren().add(stickerOnX(stickerSize, -offset, Color.ORANGE));
+            Box sticker = stickerOnX(stickerSize, -offset, Color.ORANGE);
+            sticker.setUserData(new FacePickInfo(RotationAxis.X, -1, model.coordinate().x(), model.coordinate().y(), model.coordinate().z()));
+            getChildren().add(sticker);
         }
         if (model.coordinate().y() == 1) {
-            getChildren().add(stickerOnY(stickerSize, -offset, Color.WHITE));
+            Box sticker = stickerOnY(stickerSize, -offset, Color.WHITE);
+            sticker.setUserData(new FacePickInfo(RotationAxis.Y, 1, model.coordinate().x(), model.coordinate().y(), model.coordinate().z()));
+            getChildren().add(sticker);
         }
         if (model.coordinate().y() == -1) {
-            getChildren().add(stickerOnY(stickerSize, offset, Color.YELLOW));
+            Box sticker = stickerOnY(stickerSize, offset, Color.YELLOW);
+            sticker.setUserData(new FacePickInfo(RotationAxis.Y, -1, model.coordinate().x(), model.coordinate().y(), model.coordinate().z()));
+            getChildren().add(sticker);
         }
         if (model.coordinate().z() == 1) {
-            getChildren().add(stickerOnZ(stickerSize, -offset, Color.BLUE));
+            Box sticker = stickerOnZ(stickerSize, -offset, Color.BLUE);
+            sticker.setUserData(new FacePickInfo(RotationAxis.Z, 1, model.coordinate().x(), model.coordinate().y(), model.coordinate().z()));
+            getChildren().add(sticker);
         }
         if (model.coordinate().z() == -1) {
-            getChildren().add(stickerOnZ(stickerSize, offset, Color.GREEN));
+            Box sticker = stickerOnZ(stickerSize, offset, Color.GREEN);
+            sticker.setUserData(new FacePickInfo(RotationAxis.Z, -1, model.coordinate().x(), model.coordinate().y(), model.coordinate().z()));
+            getChildren().add(sticker);
         }
     }
 
