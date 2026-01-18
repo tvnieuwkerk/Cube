@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-01-18 10:37:17 +0000 - Preserve help window size when reactivated
+- Summary of change request: Prevent the help window from shrinking to 1x1 when the help button is clicked while it is already open.
+- Summary of change request implementation: Only size the help window to its scene the first time it is shown, preserving any existing window dimensions on subsequent activations.
+
 ## 2026-01-17 16:44:05 +0000 - Refine help window layout and labels
 - Summary of change request: Clarify inverse move keys in labels, switch to three turn cards per row, shrink previews slightly, and auto-size the help window to its content.
 - Summary of change request implementation: Updated turn labels to mention Shift+Key inverse input, adjusted the grid to three columns, reduced preview sizing, and let the help window size to its scene on show.
