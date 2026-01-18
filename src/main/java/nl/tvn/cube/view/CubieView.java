@@ -61,10 +61,10 @@ public final class CubieView extends Group {
             getChildren().add(stickerOnY(stickerSize, offset, Color.YELLOW));
         }
         if (model.coordinate().z() == 1) {
-            getChildren().add(stickerOnZ(stickerSize, -offset, Color.GREEN));
+            getChildren().add(stickerOnZ(stickerSize, -offset, Color.BLUE));
         }
         if (model.coordinate().z() == -1) {
-            getChildren().add(stickerOnZ(stickerSize, offset, Color.BLUE));
+            getChildren().add(stickerOnZ(stickerSize, offset, Color.GREEN));
         }
     }
 
