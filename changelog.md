@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-01-18 12:13:24 +0000 - Add beginner method help tab with executable algorithms
+- Summary of change request: Design a new help tab detailing the beginner method with step-by-step guidance and executable algorithms.
+- Summary of change request implementation: Added a Beginner Method tab with structured step cards, algorithms, tips, and summary, plus execute buttons that send algorithms to the main input and run them.
+
 ## 2026-01-18 11:54:45 +0000 - Add shortcuts/about tabs in help window
 - Summary of change request: Rename the first help tab to Shortcuts and add an About tab with a general app description.
 - Summary of change request implementation: Updated the tab title and added an About tab containing descriptive text about the cube app.

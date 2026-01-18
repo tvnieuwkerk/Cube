@@ -42,6 +42,8 @@ public final class MainView {
     private static final double SQRT_3 = Math.sqrt(3.0);
     private final CubeViewModel viewModel;
     private final BorderPane root;
+    private TextField algorithmInput;
+    private Label errorLabel;
     private Rotate cameraYaw;
     private Rotate cameraPitch;
     private Rotate cameraRoll;
@@ -61,6 +63,14 @@ public final class MainView {
 
     public void attachHelpWindow(HelpWindow helpWindow) {
         this.helpWindow = helpWindow;
+    }
+
+    public void runAlgorithm(String notation) {
+        if (algorithmInput == null) {
+            return;
+        }
+        algorithmInput.setText(notation);
+        executeAlgorithmInput();
     }
 
     public void bindInput(Scene scene) {
@@ -148,11 +158,11 @@ public final class MainView {
         Button randomize = new Button("Randomize");
         randomize.setFocusTraversable(false);
         randomize.setOnAction(event -> viewModel.randomize());
-        TextField algorithmInput = new TextField();
+        algorithmInput = new TextField();
         algorithmInput.setPromptText("Algorithm (e.g., R U R' U')");
         algorithmInput.setPrefColumnCount(24);
 
-        Label errorLabel = new Label();
+        errorLabel = new Label();
         errorLabel.setTextFill(Color.SALMON);
         errorLabel.setVisible(false);
         errorLabel.managedProperty().bind(errorLabel.visibleProperty());
@@ -160,20 +170,8 @@ public final class MainView {
         Button run = new Button("Run");
         run.setFocusTraversable(false);
 
-        Runnable runAlgorithm = () -> {
-            AlgorithmParseResult result = AlgorithmParser.parse(algorithmInput.getText());
-            if (!result.isValid()) {
-                errorLabel.setText(result.errorMessage());
-                errorLabel.setVisible(true);
-                return;
-            }
-            errorLabel.setVisible(false);
-            viewModel.applyMoves(result.moves());
-            root.requestFocus();
-        };
-
-        run.setOnAction(event -> runAlgorithm.run());
-        algorithmInput.setOnAction(event -> runAlgorithm.run());
+        run.setOnAction(event -> executeAlgorithmInput());
+        algorithmInput.setOnAction(event -> executeAlgorithmInput());
 
         Button help = new Button("Help");
         help.setFocusTraversable(false);
@@ -194,6 +192,18 @@ public final class MainView {
         wrapper.setStyle("-fx-background-color: #252525;");
         wrapper.setPadding(new Insets(0, 10, 10, 10));
         return wrapper;
+    }
+
+    private void executeAlgorithmInput() {
+        AlgorithmParseResult result = AlgorithmParser.parse(algorithmInput.getText());
+        if (!result.isValid()) {
+            errorLabel.setText(result.errorMessage());
+            errorLabel.setVisible(true);
+            return;
+        }
+        errorLabel.setVisible(false);
+        viewModel.applyMoves(result.moves());
+        root.requestFocus();
     }
 
     private void rotateCameraYaw(double deltaDegrees) {
