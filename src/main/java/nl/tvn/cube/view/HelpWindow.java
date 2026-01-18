@@ -2,6 +2,7 @@ package nl.tvn.cube.view;
 
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 import javafx.animation.Animation;
 import javafx.animation.PauseTransition;
 import javafx.animation.SequentialTransition;
@@ -14,7 +15,9 @@ import javafx.scene.PointLight;
 import javafx.scene.Scene;
 import javafx.scene.SceneAntialiasing;
 import javafx.scene.SubScene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.layout.*;
@@ -41,9 +44,11 @@ public final class HelpWindow {
     private static final double WINDOW_GAP = 12;
     private final Stage owner;
     private final Stage stage;
+    private final Consumer<String> algorithmRunner;
 
-    public HelpWindow(Stage owner) {
+    public HelpWindow(Stage owner, Consumer<String> algorithmRunner) {
         this.owner = owner;
+        this.algorithmRunner = algorithmRunner;
         this.stage = new Stage();
         stage.initOwner(owner);
         stage.setTitle("Cube Help");
@@ -87,8 +92,9 @@ public final class HelpWindow {
         tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
 
         Tab shortcutsTab = new Tab("Shortcuts", buildHelpContent());
+        Tab beginnerTab = new Tab("Beginner Method", buildBeginnerContent());
         Tab aboutTab = new Tab("About", buildAboutContent());
-        tabPane.getTabs().addAll(shortcutsTab, aboutTab);
+        tabPane.getTabs().addAll(shortcutsTab, beginnerTab, aboutTab);
 
         return new StackPane(tabPane);
     }
@@ -144,6 +150,274 @@ public final class HelpWindow {
         StackPane aboutContainer = new StackPane(content);
         aboutContainer.setBackground(new Background(new BackgroundFill(Color.web("#1f1f1f"), CornerRadii.EMPTY, Insets.EMPTY)));
         return aboutContainer;
+    }
+
+    private StackPane buildBeginnerContent() {
+        VBox content = new VBox(CARD_SPACING);
+        content.setPadding(new Insets(CARD_SPACING));
+
+        content.getChildren().addAll(
+            buildIntroCard(),
+            buildStepCard(
+                "1. White Cross (Top Face)",
+                "Goal:",
+                List.of(
+                    "Make a cross on the white face",
+                    "Side colors of the cross must match the center pieces"
+                ),
+                "Notes:",
+                List.of(
+                    "Mostly intuitive",
+                    "No long algorithms",
+                    "Focus on edge pieces only"
+                ),
+                null,
+                List.of()
+            ),
+            buildStepCard(
+                "2. White Corners (Finish First Layer)",
+                "Goal:",
+                List.of(
+                    "Place the four white corners correctly",
+                    "First layer becomes fully solved"
+                ),
+                null,
+                List.of(),
+                "Typical Algorithms:",
+                List.of(
+                    new AlgorithmDefinition("Insert corner on the right", "R U R'"),
+                    new AlgorithmDefinition("Insert corner on the left", "L' U' L")
+                )
+            ),
+            buildStepCard(
+                "3. Middle Layer Edges",
+                "Goal:",
+                List.of(
+                    "Solve the four edge pieces in the middle layer",
+                    "No yellow on these edges"
+                ),
+                null,
+                List.of(),
+                "Algorithms:",
+                List.of(
+                    new AlgorithmDefinition("Edge goes to the right", "U R U' R' U' F' U F"),
+                    new AlgorithmDefinition("Edge goes to the left", "U' L' U L U F U' F'")
+                )
+            ),
+            buildStepCard(
+                "4. Yellow Cross (Last Layer – Part 1)",
+                "Goal:",
+                List.of(
+                    "Form a yellow cross on the bottom face",
+                    "Ignore side colors for now"
+                ),
+                "Notes:",
+                List.of(
+                    "Possible cases: Dot, L-shape, Line (repeat the algorithm until you get the cross)"
+                ),
+                "Algorithm:",
+                List.of(new AlgorithmDefinition(null, "F R U R' U' F'"))
+            ),
+            buildStepCard(
+                "5. Orient Yellow Edges (Last Layer – Part 2)",
+                "Goal:",
+                List.of(
+                    "Match the yellow cross edges with side centers"
+                ),
+                null,
+                List.of(),
+                "Algorithm:",
+                List.of(new AlgorithmDefinition(null, "R U R' U R U2 R' U"))
+            ),
+            buildStepCard(
+                "6. Position Yellow Corners (Last Layer – Part 3)",
+                "Goal:",
+                List.of(
+                    "Put yellow corners in the correct location",
+                    "Orientation does not matter yet"
+                ),
+                "Notes:",
+                List.of(
+                    "Repeat until all corners are in the right place."
+                ),
+                "Algorithm:",
+                List.of(new AlgorithmDefinition(null, "U R U' L' U R' U' L"))
+            ),
+            buildStepCard(
+                "7. Orient Yellow Corners (Finish the Cube)",
+                "Goal:",
+                List.of(
+                    "Twist yellow corners so the cube is fully solved"
+                ),
+                "How to use it:",
+                List.of(
+                    "Keep one unsolved yellow corner at the front-right",
+                    "Repeat the algorithm until it is correct",
+                    "Turn only the U face to bring the next corner into position",
+                    "Repeat until solved"
+                ),
+                "Algorithm (Right-hand version):",
+                List.of(new AlgorithmDefinition(null, "R' D' R D"))
+            ),
+            buildTipsCard(),
+            buildSummaryCard()
+        );
+
+        ScrollPane scrollPane = new ScrollPane(content);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        scrollPane.setStyle("-fx-background: #1f1f1f; -fx-background-color: #1f1f1f;");
+
+        StackPane container = new StackPane(scrollPane);
+        container.setBackground(new Background(new BackgroundFill(Color.web("#1f1f1f"), CornerRadii.EMPTY, Insets.EMPTY)));
+        return container;
+    }
+
+    private VBox buildIntroCard() {
+        Label title = buildCardTitle("Beginner Method (Layer by Layer)");
+        Label subtitle = buildBodyText("White on top and yellow on bottom. Follow each step in order.");
+        VBox card = new VBox(8, title, subtitle);
+        return wrapCard(card);
+    }
+
+    private VBox buildStepCard(
+        String titleText,
+        String goalHeader,
+        List<String> goalItems,
+        String notesHeader,
+        List<String> notesItems,
+        String algorithmHeader,
+        List<AlgorithmDefinition> algorithms
+    ) {
+        Label title = buildCardTitle(titleText);
+        VBox content = new VBox(8);
+        content.getChildren().add(title);
+        content.getChildren().add(buildSection(goalHeader, goalItems));
+        if (!notesItems.isEmpty()) {
+            content.getChildren().add(buildSection(notesHeader, notesItems));
+        }
+        if (!algorithms.isEmpty()) {
+            VBox algorithmSection = new VBox(8);
+            Label header = buildSectionHeader(algorithmHeader);
+            algorithmSection.getChildren().add(header);
+            algorithms.forEach(definition -> algorithmSection.getChildren().add(buildAlgorithmRow(definition)));
+            content.getChildren().add(algorithmSection);
+        }
+        return wrapCard(content);
+    }
+
+    private VBox buildTipsCard() {
+        Label title = buildCardTitle("Key Beginner Tips");
+        VBox tips = buildSection(
+            null,
+            List.of(
+                "Do not panic if the cube looks scrambled during steps 6–7",
+                "Always keep the same face on top",
+                "Centers never move—use them as references",
+                "Accuracy matters more than speed"
+            )
+        );
+        VBox card = new VBox(8, title, tips);
+        return wrapCard(card);
+    }
+
+    private VBox buildSummaryCard() {
+        Label title = buildCardTitle("Summary Table");
+        GridPane grid = new GridPane();
+        grid.setHgap(12);
+        grid.setVgap(6);
+
+        Label stepHeader = buildSectionHeader("Step");
+        Label solveHeader = buildSectionHeader("What You Solve");
+        grid.add(stepHeader, 0, 0);
+        grid.add(solveHeader, 1, 0);
+
+        addSummaryRow(grid, 1, "1", "White cross");
+        addSummaryRow(grid, 2, "2", "White corners");
+        addSummaryRow(grid, 3, "3", "Middle layer");
+        addSummaryRow(grid, 4, "4", "Yellow cross");
+        addSummaryRow(grid, 5, "5", "Yellow edge alignment");
+        addSummaryRow(grid, 6, "6", "Yellow corner positioning");
+        addSummaryRow(grid, 7, "7", "Yellow corner orientation");
+
+        VBox card = new VBox(8, title, grid);
+        return wrapCard(card);
+    }
+
+    private void addSummaryRow(GridPane grid, int row, String step, String description) {
+        Label stepLabel = buildBodyText(step);
+        Label descriptionLabel = buildBodyText(description);
+        grid.add(stepLabel, 0, row);
+        grid.add(descriptionLabel, 1, row);
+    }
+
+    private VBox buildSection(String headerText, List<String> items) {
+        VBox section = new VBox(4);
+        if (headerText != null && !headerText.isBlank()) {
+            section.getChildren().add(buildSectionHeader(headerText));
+        }
+        for (String item : items) {
+            Label label = buildBodyText("• " + item);
+            section.getChildren().add(label);
+        }
+        return section;
+    }
+
+    private HBox buildAlgorithmRow(AlgorithmDefinition definition) {
+        Label label = buildBodyText(definition.label() == null ? "Algorithm" : definition.label());
+        label.setStyle(label.getStyle() + " -fx-font-size: 11px;");
+
+        Label algorithm = new Label(definition.algorithm());
+        algorithm.setStyle("-fx-font-size: 12px; -fx-font-family: 'Consolas'; -fx-text-fill: #f6f6f6;");
+        algorithm.setWrapText(true);
+
+        VBox textGroup = new VBox(2, label, algorithm);
+        Button execute = new Button("Execute");
+        execute.setOnAction(event -> algorithmRunner.accept(definition.algorithm()));
+        execute.setFocusTraversable(false);
+        execute.setStyle("-fx-background-color: #3a3a3a; -fx-text-fill: white; -fx-background-radius: 6;");
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        HBox row = new HBox(10, textGroup, spacer, execute);
+        row.setPadding(new Insets(8));
+        row.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        row.setBackground(new Background(new BackgroundFill(Color.web("#2b2b2b"), new CornerRadii(6), Insets.EMPTY)));
+        return row;
+    }
+
+    private Label buildCardTitle(String text) {
+        Label label = new Label(text);
+        label.setTextFill(Color.WHITE);
+        label.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
+        label.setWrapText(true);
+        return label;
+    }
+
+    private Label buildSectionHeader(String text) {
+        Label label = new Label(text);
+        label.setTextFill(Color.web("#d6d6d6"));
+        label.setStyle("-fx-font-size: 12px; -fx-font-weight: bold;");
+        label.setWrapText(true);
+        return label;
+    }
+
+    private Label buildBodyText(String text) {
+        Label label = new Label(text);
+        label.setTextFill(Color.LIGHTGRAY);
+        label.setStyle("-fx-font-size: 12px;");
+        label.setWrapText(true);
+        return label;
+    }
+
+    private VBox wrapCard(VBox content) {
+        VBox card = new VBox();
+        card.getChildren().add(content);
+        card.setPadding(new Insets(CARD_PADDING));
+        card.setBackground(new Background(new BackgroundFill(Color.web("#262626"), new CornerRadii(8), Insets.EMPTY)));
+        return card;
     }
 
     private VBox buildTurnCard(TurnDefinition definition) {
@@ -227,5 +501,8 @@ public final class HelpWindow {
     }
 
     private record TurnDefinition(String label, Move move) {
+    }
+
+    private record AlgorithmDefinition(String label, String algorithm) {
     }
 }
