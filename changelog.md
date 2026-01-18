@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-01-18 19:16:16 +0000 - Fix selection overlay side
+- Summary of change request: Ensure the face selection outline is placed on the correct side of the axis after scrambling.
+- Summary of change request implementation: Derived the layer sign from the cubie coordinate instead of the sticker normal when generating FacePickInfo.
+
+## 2026-01-18 19:10:27 +0000 - Fix selection overlay on scrambled cube
+- Summary of change request: Ensure the face selection outline matches the clicked face even after scrambling.
+- Summary of change request implementation: Converted sticker normals back into model-space axes before deriving FacePickInfo so the overlay uses consistent axis/layer signs.
+
+## 2026-01-18 18:57:25 +0000 - Refresh face pick data after moves
+- Summary of change request: Update face picking metadata after moves so mouse interaction keeps working on scrambled cubes.
+- Summary of change request implementation: Track sticker normals and recompute FacePickInfo based on the current orientation each time a cubie updates its translation.
+
 ## 2026-01-18 17:00:22 +0000 - Fix R/L keyboard direction
 - Summary of change request: Correct inverted R/L keyboard rotations.
 - Summary of change request implementation: Removed the extra X-axis turn inversion for keyboard shortcuts so R/L follow expected notation.
