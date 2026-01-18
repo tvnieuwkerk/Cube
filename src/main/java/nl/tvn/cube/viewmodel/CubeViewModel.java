@@ -160,8 +160,9 @@ public final class CubeViewModel {
         }
         slice.sliceGroup().getTransforms().clear();
         cubeGroup.getChildren().remove(slice.sliceGroup());
-        if (turns != 0) {
-            applyFinalTurns(slice.affected(), slice.axis(), normalizeTurns(turns));
+        int adjustedTurns = normalizeTurns(adjustTurnsForAxis(slice.axis(), turns));
+        if (adjustedTurns != 0) {
+            applyFinalTurns(slice.affected(), slice.axis(), adjustedTurns);
         }
         cubeGroup.getChildren().addAll(slice.views());
         interacting = false;
@@ -341,6 +342,13 @@ public final class CubeViewModel {
             return 1;
         }
         return normalized;
+    }
+
+    private int adjustTurnsForAxis(RotationAxis axis, int turns) {
+        if (axis == RotationAxis.X) {
+            return -turns;
+        }
+        return turns;
     }
 
     private void updateBeginnerValidation() {

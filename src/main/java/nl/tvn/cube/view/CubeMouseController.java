@@ -1,6 +1,7 @@
 package nl.tvn.cube.view;
 
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.SubScene;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -9,6 +10,7 @@ import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
 import javafx.scene.shape.DrawMode;
 import javafx.scene.transform.Rotate;
+import javafx.geometry.Point3D;
 import nl.tvn.cube.model.Move;
 import nl.tvn.cube.model.RotationAxis;
 import nl.tvn.cube.viewmodel.CubeViewModel;
@@ -25,6 +27,7 @@ public final class CubeMouseController {
     private Box selectionOutline;
     private InteractionState state = InteractionState.IDLE;
     private FacePickInfo pressPick;
+    private Point3D pressPointScene;
     private double pressSceneX;
     private double pressSceneY;
     private Rotate activeRotate;
@@ -51,6 +54,7 @@ public final class CubeMouseController {
             return;
         }
         pressPick = pickInfo(event);
+        pressPointScene = pickPointScene(event);
         pressSceneX = event.getSceneX();
         pressSceneY = event.getSceneY();
         state = InteractionState.PENDING;
@@ -111,6 +115,7 @@ public final class CubeMouseController {
         }
         state = InteractionState.IDLE;
         pressPick = null;
+        pressPointScene = null;
     }
 
     private void startFaceRotation() {
@@ -120,7 +125,8 @@ public final class CubeMouseController {
         }
         activeAxis = selectedFace.axis();
         activeLayer = selectedFace.layer();
-        activeDirection = activeLayer > 0 ? 1 : -1;
+        int layerDirection = activeLayer > 0 ? 1 : -1;
+        activeDirection = resolveDragDirection(activeAxis, true, layerDirection);
         activeRotate = new Rotate(0, axisVector(activeAxis));
         cubeGroup.getTransforms().add(activeRotate);
         state = InteractionState.FACE_ROTATE_DRAG;
@@ -132,10 +138,10 @@ public final class CubeMouseController {
             return;
         }
         boolean horizontal = Math.abs(deltaX) >= Math.abs(deltaY);
-        DragMapping mapping = dragMapping(pressPick, horizontal, deltaX, deltaY);
+        DragMapping mapping = dragMapping(pressPick, horizontal);
         activeAxis = mapping.axis();
         activeLayer = mapping.layer();
-        activeDirection = mapping.direction();
+        activeDirection = resolveDragDirection(mapping.axis(), horizontal, mapping.direction());
         activeSlice = viewModel.beginInteractiveSlice(activeAxis, activeLayer);
         if (activeSlice == null) {
             state = InteractionState.IDLE;
@@ -152,6 +158,9 @@ public final class CubeMouseController {
         cubeGroup.getTransforms().remove(activeRotate);
         activeRotate = null;
         int turns = (int) Math.round(angle / 90.0);
+        if (activeAxis == RotationAxis.X) {
+            turns = -turns;
+        }
         if (turns != 0) {
             viewModel.applyMove(new Move(activeAxis, Set.of(-1, 0, 1), turns));
         }
@@ -231,8 +240,44 @@ public final class CubeMouseController {
         return null;
     }
 
-    private static DragMapping dragMapping(FacePickInfo pick, boolean horizontal, double deltaX, double deltaY) {
-        int direction = horizontal ? (deltaX >= 0 ? 1 : -1) : (deltaY >= 0 ? 1 : -1);
+    private static Point3D pickPointScene(MouseEvent event) {
+        if (event.getPickResult() == null) {
+            return null;
+        }
+        Node node = event.getPickResult().getIntersectedNode();
+        Point3D localPoint = event.getPickResult().getIntersectedPoint();
+        if (node == null || localPoint == null) {
+            return null;
+        }
+        return node.localToScene(localPoint);
+    }
+
+    private int resolveDragDirection(RotationAxis axis, boolean horizontal, int fallback) {
+        if (pressPointScene == null || scene.getCamera() == null) {
+            return fallback;
+        }
+        Point3D axisVector = axisVector(axis);
+        Point3D tangent = axisVector.crossProduct(pressPointScene);
+        if (tangent.magnitude() == 0) {
+            return fallback;
+        }
+        Point3D dragVector = sceneDragBasis(horizontal);
+        double dot = dragVector.dotProduct(tangent);
+        return dot >= 0 ? 1 : -1;
+    }
+
+    private Point3D sceneDragBasis(boolean horizontal) {
+        Point3D origin = scene.getCamera().localToScene(Point3D.ZERO);
+        Point3D right = scene.getCamera().localToScene(new Point3D(1, 0, 0)).subtract(origin);
+        if (horizontal) {
+            return right;
+        }
+        Point3D down = scene.getCamera().localToScene(new Point3D(0, 1, 0)).subtract(origin);
+        return down.multiply(-1);
+    }
+
+    private static DragMapping dragMapping(FacePickInfo pick, boolean horizontal) {
+        int direction = 1;
         RotationAxis faceAxis = pick.axis();
         int faceLayer = pick.layer();
         RotationAxis axis;

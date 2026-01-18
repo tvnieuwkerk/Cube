@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-01-18 16:36:04 +0000 - Stabilize face drag direction
+- Summary of change request: Make face-rotation drags consistent regardless of the initial mouse direction.
+- Summary of change request implementation: Derived the face drag orientation from the camera basis instead of the initial delta, so the signed mouse delta is applied only once.
+
+## 2026-01-18 16:33:13 +0000 - Fix slice drag sign handling
+- Summary of change request: Make slice drag direction predictable regardless of the initial drag sign.
+- Summary of change request implementation: Removed the double application of drag sign by deriving a positive-drag orientation from the camera and using the signed mouse delta only once.
+
+## 2026-01-18 16:17:33 +0000 - Stabilize slice drag direction
+- Summary of change request: Fix slice drags that sometimes invert direction relative to the mouse movement.
+- Summary of change request implementation: Derived slice drag direction from the camera orientation and the picked point’s rotation tangent to keep drag direction consistent across camera rotations.
+
+## 2026-01-18 16:01:14 +0000 - Invert X-axis keyboard turns
+- Summary of change request: Invert X-axis rotations for keyboard shortcuts to match the world-axis orientation used for mouse gestures.
+- Summary of change request implementation: Adjusted X-axis keyboard and wide-move turn signs before creating moves so X rotations are inverted.
+
 ## 2026-01-18 14:50:38 +0000 - Add mouse gestures for cube interactions
 - Summary of change request: Implement mouse-driven cube interactions with face selection, slice dragging, rotation snapping, and scroll zoom.
 - Summary of change request implementation: Added mouse gesture handling with face selection outlines, interactive slice rotation with snapping to 90-degree turns, whole-cube rotation from selected faces, scroll-based camera zoom, and updated help text.
@@ -19,10 +35,6 @@
 ## 2026-01-18 12:13:24 +0000 - Add beginner method help tab with executable algorithms
 - Summary of change request: Design a new help tab detailing the beginner method with step-by-step guidance and executable algorithms.
 - Summary of change request implementation: Added a Beginner Method tab with structured step cards, algorithms, tips, and summary, plus execute buttons that send algorithms to the main input and run them.
-
-## 2026-01-18 11:54:45 +0000 - Add shortcuts/about tabs in help window
-- Summary of change request: Rename the first help tab to Shortcuts and add an About tab with a general app description.
-- Summary of change request implementation: Updated the tab title and added an About tab containing descriptive text about the cube app.
 
 ## 2026-01-18 10:37:17 +0000 - Preserve help window size when reactivated
 - Summary of change request: Prevent the help window from shrinking to 1x1 when the help button is clicked while it is already open.

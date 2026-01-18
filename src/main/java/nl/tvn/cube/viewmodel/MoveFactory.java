@@ -24,14 +24,14 @@ public final class MoveFactory {
         return switch (key) {
             case "F" -> Optional.of(faceMove(RotationAxis.Z, Set.of(1), turns));
             case "B" -> Optional.of(faceMove(RotationAxis.Z, Set.of(-1), -turns));
-            case "R" -> Optional.of(faceMove(RotationAxis.X, Set.of(1), turns));
-            case "L" -> Optional.of(faceMove(RotationAxis.X, Set.of(-1), -turns));
+            case "R" -> Optional.of(faceMove(RotationAxis.X, Set.of(1), adjustTurnsForAxis(RotationAxis.X, turns)));
+            case "L" -> Optional.of(faceMove(RotationAxis.X, Set.of(-1), adjustTurnsForAxis(RotationAxis.X, -turns)));
             case "U" -> Optional.of(faceMove(RotationAxis.Y, Set.of(1), turns));
             case "D" -> Optional.of(faceMove(RotationAxis.Y, Set.of(-1), -turns));
-            case "M" -> Optional.of(faceMove(RotationAxis.X, Set.of(0), turns));
+            case "M" -> Optional.of(faceMove(RotationAxis.X, Set.of(0), adjustTurnsForAxis(RotationAxis.X, turns)));
             case "E" -> Optional.of(faceMove(RotationAxis.Y, Set.of(0), turns));
             case "S" -> Optional.of(faceMove(RotationAxis.Z, Set.of(0), turns));
-            case "X" -> Optional.of(faceMove(RotationAxis.X, Set.of(-1, 0, 1), turns));
+            case "X" -> Optional.of(faceMove(RotationAxis.X, Set.of(-1, 0, 1), adjustTurnsForAxis(RotationAxis.X, turns)));
             case "Y" -> Optional.of(faceMove(RotationAxis.Y, Set.of(-1, 0, 1), turns));
             case "Z" -> Optional.of(faceMove(RotationAxis.Z, Set.of(-1, 0, 1), turns));
             default -> Optional.empty();
@@ -49,8 +49,8 @@ public final class MoveFactory {
         int turns = doubleTurn ? baseTurns * 2 : baseTurns;
 
         return switch (key) {
-            case "R" -> Optional.of(new Move(RotationAxis.X, Set.of(1, 0), turns));
-            case "L" -> Optional.of(new Move(RotationAxis.X, Set.of(-1, 0), -turns));
+            case "R" -> Optional.of(new Move(RotationAxis.X, Set.of(1, 0), adjustTurnsForAxis(RotationAxis.X, turns)));
+            case "L" -> Optional.of(new Move(RotationAxis.X, Set.of(-1, 0), adjustTurnsForAxis(RotationAxis.X, -turns)));
             case "U" -> Optional.of(new Move(RotationAxis.Y, Set.of(1, 0), turns));
             case "D" -> Optional.of(new Move(RotationAxis.Y, Set.of(-1, 0), -turns));
             case "F" -> Optional.of(new Move(RotationAxis.Z, Set.of(1, 0), turns));
@@ -78,5 +78,12 @@ public final class MoveFactory {
 
     private static Move faceMove(RotationAxis axis, Set<Integer> layers, int turns) {
         return new Move(axis, layers, turns);
+    }
+
+    private static int adjustTurnsForAxis(RotationAxis axis, int turns) {
+        if (axis == RotationAxis.X) {
+            return -turns;
+        }
+        return turns;
     }
 }
