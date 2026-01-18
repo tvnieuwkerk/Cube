@@ -3,6 +3,7 @@ package nl.tvn.cube.viewmodel;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,9 +12,14 @@ import java.util.Set;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.Group;
 import javafx.scene.transform.Rotate;
 import javafx.util.Duration;
+import nl.tvn.cube.model.BeginnerMethodValidator;
+import nl.tvn.cube.model.BeginnerStep;
 import nl.tvn.cube.model.CubeModel;
 import nl.tvn.cube.model.CubieModel;
 import nl.tvn.cube.model.Move;
@@ -27,6 +33,8 @@ public final class CubeViewModel {
     private final Group cubeGroup;
     private final Map<CubieModel, CubieView> cubieViews;
     private final Random random;
+    private final BeginnerMethodValidator validator;
+    private final Map<BeginnerStep, BooleanProperty> beginnerStepStatus;
     private boolean animating;
 
     public CubeViewModel() {
@@ -34,7 +42,10 @@ public final class CubeViewModel {
         this.cubeGroup = new Group();
         this.cubieViews = new HashMap<>();
         this.random = new Random();
+        this.validator = new BeginnerMethodValidator(model);
+        this.beginnerStepStatus = new EnumMap<>(BeginnerStep.class);
         buildViews();
+        initializeBeginnerSteps();
     }
 
     public Group cubeGroup() {
@@ -67,6 +78,7 @@ public final class CubeViewModel {
             view.resetOrientation();
             view.updateTranslation();
         }
+        updateBeginnerSteps();
     }
 
     public void randomize() {
@@ -94,6 +106,10 @@ public final class CubeViewModel {
         playMoveSequence(moves, TURN_DURATION);
     }
 
+    public ReadOnlyBooleanProperty beginnerStepStatus(BeginnerStep step) {
+        return beginnerStepStatus.get(step);
+    }
+
     private void buildViews() {
         for (CubieModel cubie : model.cubies()) {
             CubieView view = new CubieView(cubie);
@@ -115,7 +131,7 @@ public final class CubeViewModel {
         for (CubieModel cubie : affected) {
             CubieView view = cubieViews.get(cubie);
             view.rotateAroundWorld(axis, angle);
-            rotateCoordinate(cubie, axis, turn);
+            cubie.rotate(axis, turn);
             view.updateTranslation();
         }
     }
@@ -145,6 +161,7 @@ public final class CubeViewModel {
             cubeGroup.getChildren().remove(sliceGroup);
             applyFinalTurns(affected, axis, turns);
             cubeGroup.getChildren().addAll(views);
+            updateBeginnerSteps();
             animating = false;
         });
         timeline.play();
@@ -160,6 +177,7 @@ public final class CubeViewModel {
         Move move = queue.pollFirst();
         if (move == null) {
             animating = false;
+            updateBeginnerSteps();
             return;
         }
         List<CubieModel> affected = new ArrayList<>();
@@ -216,44 +234,6 @@ public final class CubeViewModel {
         };
     }
 
-    private void rotateCoordinate(CubieModel cubie, RotationAxis axis, int turn) {
-        int x = cubie.coordinate().x();
-        int y = cubie.coordinate().y();
-        int z = cubie.coordinate().z();
-
-        int newX = x;
-        int newY = y;
-        int newZ = z;
-
-        if (axis == RotationAxis.X) {
-            if (turn > 0) {
-                newY = z;
-                newZ = -y;
-            } else {
-                newY = -z;
-                newZ = y;
-            }
-        } else if (axis == RotationAxis.Y) {
-            if (turn > 0) {
-                newX = -z;
-                newZ = x;
-            } else {
-                newX = z;
-                newZ = -x;
-            }
-        } else if (axis == RotationAxis.Z) {
-            if (turn > 0) {
-                newX = y;
-                newY = -x;
-            } else {
-                newX = -y;
-                newY = x;
-            }
-        }
-
-        cubie.coordinate().set(newX, newY, newZ);
-    }
-
     private int normalizeTurns(int turns) {
         int normalized = turns % 4;
         if (normalized == 3) {
@@ -263,6 +243,19 @@ public final class CubeViewModel {
             return 1;
         }
         return normalized;
+    }
+
+    private void initializeBeginnerSteps() {
+        for (BeginnerStep step : BeginnerStep.values()) {
+            beginnerStepStatus.put(step, new SimpleBooleanProperty(false));
+        }
+        updateBeginnerSteps();
+    }
+
+    private void updateBeginnerSteps() {
+        for (Map.Entry<BeginnerStep, BooleanProperty> entry : beginnerStepStatus.entrySet()) {
+            entry.getValue().set(validator.isStepSolved(entry.getKey()));
+        }
     }
 
     private static javafx.geometry.Point3D axisVector(RotationAxis axis) {

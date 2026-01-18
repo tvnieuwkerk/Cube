@@ -15,6 +15,16 @@ public final class CubeModel {
         return Collections.unmodifiableList(cubies);
     }
 
+    public CubieModel cubieAt(int x, int y, int z) {
+        for (CubieModel cubie : cubies) {
+            CubeCoordinate coordinate = cubie.coordinate();
+            if (coordinate.x() == x && coordinate.y() == y && coordinate.z() == z) {
+                return cubie;
+            }
+        }
+        return null;
+    }
+
     public void reset() {
         int index = 0;
         for (int x = -1; x <= 1; x++) {
@@ -23,7 +33,9 @@ public final class CubeModel {
                     if (x == 0 && y == 0 && z == 0) {
                         continue;
                     }
-                    cubies.get(index).coordinate().set(x, y, z);
+                    CubieModel cubie = cubies.get(index);
+                    cubie.coordinate().set(x, y, z);
+                    cubie.resetStickers();
                     index++;
                 }
             }

@@ -1,0 +1,11 @@
+package nl.tvn.cube.model;
+
+public enum BeginnerStep {
+    WHITE_CROSS,
+    WHITE_CORNERS,
+    MIDDLE_LAYER,
+    YELLOW_CROSS,
+    YELLOW_EDGE_ALIGNMENT,
+    YELLOW_CORNER_POSITION,
+    YELLOW_CORNER_ORIENTATION
+}

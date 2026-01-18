@@ -3,10 +3,12 @@ package nl.tvn.cube.view;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
+import javafx.beans.binding.Bindings;
 import javafx.animation.Animation;
 import javafx.animation.PauseTransition;
 import javafx.animation.SequentialTransition;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.AmbientLight;
 import javafx.scene.Camera;
@@ -29,6 +31,7 @@ import javafx.scene.transform.Translate;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import nl.tvn.cube.model.BeginnerStep;
 import nl.tvn.cube.model.Move;
 import nl.tvn.cube.model.RotationAxis;
 import nl.tvn.cube.viewmodel.CubeViewModel;
@@ -45,9 +48,11 @@ public final class HelpWindow {
     private final Stage owner;
     private final Stage stage;
     private final Consumer<String> algorithmRunner;
+    private final CubeViewModel viewModel;
 
-    public HelpWindow(Stage owner, Consumer<String> algorithmRunner) {
+    public HelpWindow(Stage owner, CubeViewModel viewModel, Consumer<String> algorithmRunner) {
         this.owner = owner;
+        this.viewModel = viewModel;
         this.algorithmRunner = algorithmRunner;
         this.stage = new Stage();
         stage.initOwner(owner);
@@ -159,6 +164,7 @@ public final class HelpWindow {
         content.getChildren().addAll(
             buildIntroCard(),
             buildStepCard(
+                BeginnerStep.WHITE_CROSS,
                 "1. White Cross (Top Face)",
                 "Goal:",
                 List.of(
@@ -175,6 +181,7 @@ public final class HelpWindow {
                 List.of()
             ),
             buildStepCard(
+                BeginnerStep.WHITE_CORNERS,
                 "2. White Corners (Finish First Layer)",
                 "Goal:",
                 List.of(
@@ -190,6 +197,7 @@ public final class HelpWindow {
                 )
             ),
             buildStepCard(
+                BeginnerStep.MIDDLE_LAYER,
                 "3. Middle Layer Edges",
                 "Goal:",
                 List.of(
@@ -205,6 +213,7 @@ public final class HelpWindow {
                 )
             ),
             buildStepCard(
+                BeginnerStep.YELLOW_CROSS,
                 "4. Yellow Cross (Last Layer – Part 1)",
                 "Goal:",
                 List.of(
@@ -219,6 +228,7 @@ public final class HelpWindow {
                 List.of(new AlgorithmDefinition(null, "F R U R' U' F'"))
             ),
             buildStepCard(
+                BeginnerStep.YELLOW_EDGE_ALIGNMENT,
                 "5. Orient Yellow Edges (Last Layer – Part 2)",
                 "Goal:",
                 List.of(
@@ -230,6 +240,7 @@ public final class HelpWindow {
                 List.of(new AlgorithmDefinition(null, "R U R' U R U2 R' U"))
             ),
             buildStepCard(
+                BeginnerStep.YELLOW_CORNER_POSITION,
                 "6. Position Yellow Corners (Last Layer – Part 3)",
                 "Goal:",
                 List.of(
@@ -244,6 +255,7 @@ public final class HelpWindow {
                 List.of(new AlgorithmDefinition(null, "U R U' L' U R' U' L"))
             ),
             buildStepCard(
+                BeginnerStep.YELLOW_CORNER_ORIENTATION,
                 "7. Orient Yellow Corners (Finish the Cube)",
                 "Goal:",
                 List.of(
@@ -282,6 +294,7 @@ public final class HelpWindow {
     }
 
     private VBox buildStepCard(
+        BeginnerStep step,
         String titleText,
         String goalHeader,
         List<String> goalItems,
@@ -290,7 +303,7 @@ public final class HelpWindow {
         String algorithmHeader,
         List<AlgorithmDefinition> algorithms
     ) {
-        Label title = buildCardTitle(titleText);
+        HBox title = buildStepTitle(step, titleText);
         VBox content = new VBox(8);
         content.getChildren().add(title);
         content.getChildren().add(buildSection(goalHeader, goalItems));
@@ -394,6 +407,20 @@ public final class HelpWindow {
         label.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
         label.setWrapText(true);
         return label;
+    }
+
+    private HBox buildStepTitle(BeginnerStep step, String text) {
+        Label statusIcon = new Label();
+        statusIcon.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
+        statusIcon.textProperty().bind(Bindings.when(viewModel.beginnerStepStatus(step)).then("✓").otherwise("✗"));
+        statusIcon.textFillProperty().bind(Bindings.when(viewModel.beginnerStepStatus(step))
+            .then(Color.web("#4cd964"))
+            .otherwise(Color.web("#ff6b6b")));
+
+        Label title = buildCardTitle(text);
+        HBox header = new HBox(8, statusIcon, title);
+        header.setAlignment(Pos.CENTER_LEFT);
+        return header;
     }
 
     private Label buildSectionHeader(String text) {
