@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-01-18 13:26:27 +0000 - Normalize beginner validation to cube orientation
+- Summary of change request: Ensure cube orientation does not affect validation by always treating the white-centered face as the top.
+- Summary of change request implementation: Added orientation normalization based on center cubies so beginner method validations use cube coordinates aligned with the white center on top.
+
 ## 2026-01-18 12:44:28 +0000 - Add beginner method validation and status indicators
 - Summary of change request: Design a validator for each beginner method step, run validation after moves/algorithms, show status icons, and add unit tests for each step.
 - Summary of change request implementation: Added a beginner method validator with step-by-step checks, wired the cube view model to update validation status after moves and resets, displayed status icons in the beginner method tab, and created unit tests covering each validation step.
