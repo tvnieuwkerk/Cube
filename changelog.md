@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-01-18 12:44:28 +0000 - Add beginner method validation and status indicators
+- Summary of change request: Design a validator for each beginner method step, run validation after moves/algorithms, show status icons, and add unit tests for each step.
+- Summary of change request implementation: Added a beginner method validator with step-by-step checks, wired the cube view model to update validation status after moves and resets, displayed status icons in the beginner method tab, and created unit tests covering each validation step.
+
 ## 2026-01-18 12:13:24 +0000 - Add beginner method help tab with executable algorithms
 - Summary of change request: Design a new help tab detailing the beginner method with step-by-step guidance and executable algorithms.
 - Summary of change request implementation: Added a Beginner Method tab with structured step cards, algorithms, tips, and summary, plus execute buttons that send algorithms to the main input and run them.

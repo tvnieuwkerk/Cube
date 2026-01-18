@@ -3,17 +3,23 @@ package nl.tvn.cube.viewmodel;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.scene.Group;
 import javafx.scene.transform.Rotate;
 import javafx.util.Duration;
+import nl.tvn.cube.model.BeginnerMethodStep;
+import nl.tvn.cube.model.BeginnerMethodValidator;
 import nl.tvn.cube.model.CubeModel;
 import nl.tvn.cube.model.CubieModel;
 import nl.tvn.cube.model.Move;
@@ -27,6 +33,8 @@ public final class CubeViewModel {
     private final Group cubeGroup;
     private final Map<CubieModel, CubieView> cubieViews;
     private final Random random;
+    private final BeginnerMethodValidator beginnerValidator;
+    private final Map<BeginnerMethodStep, BooleanProperty> beginnerStepStatus;
     private boolean animating;
 
     public CubeViewModel() {
@@ -34,11 +42,21 @@ public final class CubeViewModel {
         this.cubeGroup = new Group();
         this.cubieViews = new HashMap<>();
         this.random = new Random();
+        this.beginnerValidator = new BeginnerMethodValidator();
+        this.beginnerStepStatus = new EnumMap<>(BeginnerMethodStep.class);
+        for (BeginnerMethodStep step : BeginnerMethodStep.values()) {
+            beginnerStepStatus.put(step, new SimpleBooleanProperty(false));
+        }
         buildViews();
+        updateBeginnerValidation();
     }
 
     public Group cubeGroup() {
         return cubeGroup;
+    }
+
+    public ReadOnlyBooleanProperty beginnerStepProperty(BeginnerMethodStep step) {
+        return beginnerStepStatus.get(step);
     }
 
     public void applyMove(Move move) {
@@ -67,6 +85,7 @@ public final class CubeViewModel {
             view.resetOrientation();
             view.updateTranslation();
         }
+        updateBeginnerValidation();
     }
 
     public void randomize() {
@@ -146,6 +165,7 @@ public final class CubeViewModel {
             applyFinalTurns(affected, axis, turns);
             cubeGroup.getChildren().addAll(views);
             animating = false;
+            updateBeginnerValidation();
         });
         timeline.play();
     }
@@ -160,6 +180,7 @@ public final class CubeViewModel {
         Move move = queue.pollFirst();
         if (move == null) {
             animating = false;
+            updateBeginnerValidation();
             return;
         }
         List<CubieModel> affected = new ArrayList<>();
@@ -263,6 +284,13 @@ public final class CubeViewModel {
             return 1;
         }
         return normalized;
+    }
+
+    private void updateBeginnerValidation() {
+        Map<BeginnerMethodStep, Boolean> results = beginnerValidator.validate(model.cubies());
+        for (Map.Entry<BeginnerMethodStep, Boolean> entry : results.entrySet()) {
+            beginnerStepStatus.get(entry.getKey()).set(entry.getValue());
+        }
     }
 
     private static javafx.geometry.Point3D axisVector(RotationAxis axis) {
