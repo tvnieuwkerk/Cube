@@ -225,8 +225,9 @@ public final class CubeMouseController {
         if (event.getPickResult() == null || event.getPickResult().getIntersectedNode() == null) {
             return null;
         }
-        Object data = event.getPickResult().getIntersectedNode().getUserData();
-        if (!(data instanceof CubieModel model)) {
+        javafx.scene.Node node = event.getPickResult().getIntersectedNode();
+        CubieModel model = findCubieModel(node);
+        if (model == null) {
             return null;
         }
         RotationAxis axis = axisFromPick(event);
@@ -261,6 +262,18 @@ public final class CubeMouseController {
             return RotationAxis.Y;
         }
         return RotationAxis.Z;
+    }
+
+    private static CubieModel findCubieModel(javafx.scene.Node node) {
+        javafx.scene.Node current = node;
+        while (current != null) {
+            Object data = current.getUserData();
+            if (data instanceof CubieModel model) {
+                return model;
+            }
+            current = current.getParent();
+        }
+        return null;
     }
 
     private static DragMapping dragMapping(FacePickInfo pick, boolean horizontal, double deltaX, double deltaY) {

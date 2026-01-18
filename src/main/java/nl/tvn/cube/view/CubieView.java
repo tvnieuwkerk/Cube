@@ -16,6 +16,7 @@ public final class CubieView extends Group {
     public CubieView(CubieModel model) {
         this.model = model;
         this.orientation = new Affine();
+        setUserData(model);
         getTransforms().add(orientation);
         buildGeometry();
         updateTranslation();

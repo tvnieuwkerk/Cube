@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-01-18 15:13:48 +0000 - Restore mouse gesture picking
+- Summary of change request: Fix mouse gesture picking so clicks are recognized after recent input changes.
+- Summary of change request implementation: Attached cubie models to the cubie view and added parent traversal for pick lookups to ensure mouse hits resolve to the correct cubie.
+
 ## 2026-01-18 15:06:17 +0000 - Fix mouse pick coordinates after rotations
 - Summary of change request: Ensure mouse slice drags use the cubie's current position instead of its original location.
 - Summary of change request implementation: Changed sticker pick metadata to reference the cubie model at click time and compute face axis/layer from the pick normal and current coordinates.
