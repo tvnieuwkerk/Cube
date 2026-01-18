@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-01-18 13:52:24 +0000 - Correct cube face color assignments
+- Summary of change request: Fix the cube face colors so the official opposite color pairs are applied correctly.
+- Summary of change request implementation: Swapped the front/back face colors to ensure the blue/green pair matches the official opposite configuration.
+
 ## 2026-01-18 13:26:27 +0000 - Normalize beginner validation to cube orientation
 - Summary of change request: Ensure cube orientation does not affect validation by always treating the white-centered face as the top.
 - Summary of change request implementation: Added orientation normalization based on center cubies so beginner method validations use cube coordinates aligned with the white center on top.
