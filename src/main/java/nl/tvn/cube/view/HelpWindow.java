@@ -44,6 +44,7 @@ public final class HelpWindow {
     private static final double WINDOW_GAP = 12;
     private final Stage owner;
     private final Stage stage;
+    private boolean hasSizedToScene;
 
     public HelpWindow(Stage owner) {
         this.owner = owner;
@@ -56,8 +57,11 @@ public final class HelpWindow {
     public void show() {
         if (!stage.isShowing()) {
             stage.show();
+            if (!hasSizedToScene) {
+                stage.sizeToScene();
+                hasSizedToScene = true;
+            }
         }
-        stage.sizeToScene();
         positionToRightOfOwner();
         stage.toFront();
     }
