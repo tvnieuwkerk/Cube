@@ -25,6 +25,12 @@ mvn javafx:run
 - **Cube rotations:** `X Y Z`
 - **Mouse gestures:** click a face to select it, drag to rotate a face or slice, drag with a selected face to rotate the whole cube, and scroll to zoom.
 
+Keyboard shortcuts control the main cube and camera from either the main window or Help,
+including all help tabs. Arrow keys and Page Up/Down control the camera even when Help's
+controls are focused. While the algorithm input is focused, keys retain normal text-editing
+behaviour; Enter runs the algorithm. Cube moves remain blocked during calculation,
+animation, or a drag, while camera controls remain available.
+
 ### Extra features
 - **Algorithm runner:** enter notation like `R U R' U'` and run it directly.
 - **Help window:** view animated turn previews and keyboard hints.
@@ -41,6 +47,13 @@ Open **Help → Beginner Method** for a manual seven-stage guide. Solve the whit
 then press **Ctrl+X** to put white below and yellow above for the remaining stages. Each
 algorithm includes its required setup and stopping condition. **Run once** executes only
 the displayed sequence; it does not choose a case or prepare the cube automatically.
+
+The white-cross card also offers **Solve one edge**. It chooses the shortest sequence of
+`F B R L U D` face turns and inverses that solves at least one additional white edge,
+displays the target and moves, and immediately animates them. Half turns are two separate
+quarter turns. Already-solved white edges are restored by the end of the sequence; other
+pieces may change. Repeat until the cross is complete. Calculation runs in the background,
+and cube-changing input is locked through calculation and playback.
 
 The completion indicators check both piece locations and sticker directions, including all
 earlier stages. They update after every move and can temporarily turn red during the final

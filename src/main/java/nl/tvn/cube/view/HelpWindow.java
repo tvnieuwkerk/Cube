@@ -63,6 +63,10 @@ public final class HelpWindow {
         stage.setScene(new Scene(buildContent()));
     }
 
+    public Scene scene() {
+        return stage.getScene();
+    }
+
     public void show() {
         if (!stage.isShowing()) {
             stage.show();
@@ -176,9 +180,25 @@ public final class HelpWindow {
 
         content.getChildren().add(buildIntroCard());
         for (BeginnerGuide.StepDefinition step : BeginnerGuide.STEPS) {
-            content.getChildren().add(buildStepCard(step.title(), viewModel.beginnerStepProperty(step.step()),
+            VBox card = buildStepCard(step.title(), viewModel.beginnerStepProperty(step.step()),
                 "Goal:", List.of(step.goal()), "Setup and use:", step.instructions(),
-                "Run the stated case once:", step.algorithms()));
+                "Run the stated case once:", step.algorithms());
+            if (step.step() == BeginnerMethodStep.WHITE_CROSS) {
+                VBox cardContent = (VBox) card.getChildren().getFirst();
+                Button solveEdge = new Button("Solve one edge");
+                solveEdge.setId("solve-white-edge");
+                solveEdge.setFocusTraversable(false);
+                solveEdge.disableProperty().bind(viewModel.busyProperty()
+                    .or(viewModel.beginnerStepProperty(BeginnerMethodStep.WHITE_CROSS)));
+                solveEdge.setOnAction(event -> viewModel.solveOneWhiteEdge());
+                Label solution = buildBodyText("");
+                solution.setId("white-edge-solution");
+                solution.textProperty().bind(viewModel.whiteEdgeSolutionTextProperty());
+                solution.visibleProperty().bind(solution.textProperty().isNotEmpty());
+                solution.managedProperty().bind(solution.visibleProperty());
+                cardContent.getChildren().addAll(solveEdge, solution);
+            }
+            content.getChildren().add(card);
         }
         content.getChildren().addAll(buildTipsCard(), buildSummaryCard());
 

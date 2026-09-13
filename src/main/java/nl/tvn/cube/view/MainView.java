@@ -10,6 +10,8 @@ import javafx.scene.SubScene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputControl;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -26,6 +28,8 @@ import javafx.scene.PointLight;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
 import java.util.Locale;
+import java.util.HashSet;
+import java.util.Set;
 import nl.tvn.cube.viewmodel.AlgorithmParseResult;
 import nl.tvn.cube.viewmodel.AlgorithmParser;
 import nl.tvn.cube.viewmodel.CubeViewModel;
@@ -49,6 +53,7 @@ public final class MainView {
     private Rotate cameraRoll;
     private Translate cameraDistance;
     private HelpWindow helpWindow;
+    private final Set<Scene> inputScenes = new HashSet<>();
 
     public MainView(CubeViewModel viewModel) {
         this.viewModel = viewModel;
@@ -64,6 +69,7 @@ public final class MainView {
 
     public void attachHelpWindow(HelpWindow helpWindow) {
         this.helpWindow = helpWindow;
+        bindInput(helpWindow.scene());
     }
 
     public void runAlgorithm(String notation) {
@@ -75,41 +81,51 @@ public final class MainView {
     }
 
     public void bindInput(Scene scene) {
-        scene.setOnKeyPressed(event -> {
-            if (event.getCode() == KeyCode.LEFT) {
-                rotateCameraYaw(-CAMERA_YAW_STEP);
+        if (inputScenes.add(scene)) {
+            scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> handleKeyPressed(scene, event));
+        }
+    }
+
+    private void handleKeyPressed(Scene scene, KeyEvent event) {
+        if (scene.getFocusOwner() instanceof TextInputControl) {
+            return;
+        }
+        if (event.getCode() == KeyCode.LEFT) {
+            rotateCameraYaw(-CAMERA_YAW_STEP);
+            event.consume();
+            return;
+        }
+        if (event.getCode() == KeyCode.RIGHT) {
+            rotateCameraYaw(CAMERA_YAW_STEP);
+            event.consume();
+            return;
+        }
+        if (event.getCode() == KeyCode.UP) {
+            rotateCameraPitch(-CAMERA_PITCH_STEP);
+            event.consume();
+            return;
+        }
+        if (event.getCode() == KeyCode.DOWN) {
+            rotateCameraPitch(CAMERA_PITCH_STEP);
+            event.consume();
+            return;
+        }
+        if (event.getCode() == KeyCode.PAGE_UP) {
+            rotateCameraRoll(-CAMERA_ROLL_STEP);
+            event.consume();
+            return;
+        }
+        if (event.getCode() == KeyCode.PAGE_DOWN) {
+            rotateCameraRoll(CAMERA_ROLL_STEP);
+            event.consume();
+            return;
+        }
+        MoveFactory.wideMove(event)
+            .or(() -> MoveFactory.fromKeyEvent(event))
+            .ifPresent(move -> {
+                viewModel.applyMove(move);
                 event.consume();
-                return;
-            }
-            if (event.getCode() == KeyCode.RIGHT) {
-                rotateCameraYaw(CAMERA_YAW_STEP);
-                event.consume();
-                return;
-            }
-            if (event.getCode() == KeyCode.UP) {
-                rotateCameraPitch(-CAMERA_PITCH_STEP);
-                event.consume();
-                return;
-            }
-            if (event.getCode() == KeyCode.DOWN) {
-                rotateCameraPitch(CAMERA_PITCH_STEP);
-                event.consume();
-                return;
-            }
-            if (event.getCode() == KeyCode.PAGE_UP) {
-                rotateCameraRoll(-CAMERA_ROLL_STEP);
-                event.consume();
-                return;
-            }
-            if (event.getCode() == KeyCode.PAGE_DOWN) {
-                rotateCameraRoll(CAMERA_ROLL_STEP);
-                event.consume();
-                return;
-            }
-            MoveFactory.wideMove(event)
-                .or(() -> MoveFactory.fromKeyEvent(event))
-                .ifPresent(viewModel::applyMove);
-        });
+            });
     }
 
     private StackPane buildScene() {

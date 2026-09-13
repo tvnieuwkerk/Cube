@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-09-13 14:53:13 UTC - Share keyboard controls between main and help windows
+- Summary of change request: Keep cube and camera keyboard controls working regardless of which application window is active, while preserving normal algorithm-field editing.
+- Summary of change request implementation: Registered a shared key-pressed event filter on both scenes via the help scene accessor. Made registration idempotent, consumed recognized shortcuts before help controls handle them, and retained text-input editing and existing busy-state restrictions. Updated README usage instructions.
+- Validation: All 38 Maven tests pass, covering move modifiers from both scenes, help navigation, repeat binding/reopening, camera input while busy, and text editing/Enter-to-run. Native focus switching remains unverified: JavaFX Robot and AWT Robot produced no key events in the temporary verification windows in this environment.
+
+## 2026-09-13 09:29:37 UTC - Solve one white-cross edge with basic moves
+- Summary of change request: Add a Solve one edge button that determines and plays a shortest sequence of face quarter turns and inverses, restoring existing white-cross progress by the end.
+- Summary of change request implementation: Added an immutable four-edge snapshot and breadth-first solver with deterministic move order and centre-relative goals. Integrated background calculation and uninterrupted busy-state locking with the existing animation queue. The white-cross help card displays the target and sequence, disables solving while busy or complete, and reports calculation failures without changing the cube. Updated the guide and README.
+- Validation: All 36 Maven tests pass, including shortest-path comparisons, flipped edges, all 24 cube orientations, 100 seeded scrambles with slice/wide moves, and JavaFX button, playback, locking and failure checks.
+
 ## 2026-09-13 09:09:47 UTC - Make the beginner solving guide accurate
 - Summary of change request: Implement accurate sticker-aware completion checks and a consistent manual beginner guide with verified algorithm setups.
 - Summary of change request implementation: Added exact cubie orientation and model-owned moves; derive rendering and face picking from model state; validate sticker directions and cumulative solving stages; publish progress after every move and disable help execution while busy. Rewrote the guide with explicit white-bottom setup, case placement and stopping rules, corrected corner insertion and yellow-edge sequences, and shared testable algorithm definitions. Gave the help window a readable default size bounded by the screen. Added model, guide and JavaFX integration regression tests.

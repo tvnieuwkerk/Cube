@@ -9,6 +9,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.function.Function;
+import javafx.concurrent.Task;
+import javafx.beans.property.ReadOnlyStringProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+import nl.tvn.cube.model.WhiteCrossEdgeSolver;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -36,10 +42,20 @@ public final class CubeViewModel {
     private final BeginnerMethodValidator beginnerValidator;
     private final Map<BeginnerMethodStep, BooleanProperty> beginnerStepStatus;
     private final BooleanProperty busy = new SimpleBooleanProperty(false);
+    private final Function<WhiteCrossEdgeSolver.Snapshot, WhiteCrossEdgeSolver.Solution> edgeSolver;
+    private final StringProperty whiteEdgeSolutionText = new SimpleStringProperty("");
+    private boolean calculating;
+    private String playingWhiteEdgeSolution;
     private boolean animating;
     private boolean interacting;
 
     public CubeViewModel() {
+        this(new WhiteCrossEdgeSolver()::solve);
+    }
+
+    // Allows integration tests to control completion/failure of the background calculation.
+    CubeViewModel(Function<WhiteCrossEdgeSolver.Snapshot, WhiteCrossEdgeSolver.Solution> edgeSolver) {
+        this.edgeSolver = edgeSolver;
         this.model = new CubeModel();
         this.cubeGroup = new Group();
         this.cubieViews = new HashMap<>();
@@ -67,20 +83,74 @@ public final class CubeViewModel {
 
     private void setAnimating(boolean value) {
         animating = value;
-        busy.set(animating || interacting);
+        busy.set(animating || interacting || calculating);
     }
 
     private void setInteracting(boolean value) {
         interacting = value;
-        busy.set(animating || interacting);
+        busy.set(animating || interacting || calculating);
     }
 
     public boolean isBusy() {
-        return animating || interacting;
+        return animating || interacting || calculating;
+    }
+
+    public ReadOnlyStringProperty whiteEdgeSolutionTextProperty() {
+        return whiteEdgeSolutionText;
+    }
+
+    public void solveOneWhiteEdge() {
+        if (isBusy()) return;
+        if (beginnerStepProperty(BeginnerMethodStep.WHITE_CROSS).get()) {
+            whiteEdgeSolutionText.set("White cross complete.");
+            return;
+        }
+        calculating = true;
+        busy.set(true);
+        whiteEdgeSolutionText.set("Finding moves…");
+        final WhiteCrossEdgeSolver.Snapshot snapshot;
+        try {
+            snapshot = WhiteCrossEdgeSolver.Snapshot.capture(model.cubies());
+        } catch (RuntimeException error) {
+            finishEdgeCalculation("Unable to calculate an edge solution. The cube was not changed.");
+            return;
+        }
+        Task<WhiteCrossEdgeSolver.Solution> task = new Task<>() {
+            @Override
+            protected WhiteCrossEdgeSolver.Solution call() {
+                return edgeSolver.apply(snapshot);
+            }
+        };
+        task.setOnSucceeded(event -> {
+            WhiteCrossEdgeSolver.Solution solution = task.getValue();
+            switch (solution.status()) {
+                case ALREADY_COMPLETE -> finishEdgeCalculation("White cross complete.");
+                case NO_SOLUTION -> finishEdgeCalculation("No edge solution found. The cube was not changed.");
+                case FOUND -> {
+                    playingWhiteEdgeSolution = solution.target().label() + ": " + solution.notation();
+                    whiteEdgeSolutionText.set("Solving " + playingWhiteEdgeSolution);
+                    // Start playback before releasing the calculation lock: busy never flickers off.
+                    playMoveSequence(solution.moves(), TURN_DURATION);
+                    calculating = false;
+                    busy.set(animating || interacting);
+                }
+            }
+        });
+        task.setOnFailed(event -> finishEdgeCalculation("Unable to calculate an edge solution. The cube was not changed."));
+        task.setOnCancelled(event -> finishEdgeCalculation("Edge calculation cancelled. The cube was not changed."));
+        Thread worker = new Thread(task, "white-cross-edge-solver");
+        worker.setDaemon(true);
+        worker.start();
+    }
+
+    private void finishEdgeCalculation(String message) {
+        whiteEdgeSolutionText.set(message);
+        calculating = false;
+        busy.set(animating || interacting);
     }
 
     public void applyMove(Move move) {
-        if (animating || interacting) {
+        if (isBusy()) {
             return;
         }
         List<CubieModel> affected = new ArrayList<>();
@@ -97,10 +167,11 @@ public final class CubeViewModel {
     }
 
     public void reset() {
-        if (animating || interacting) {
+        if (isBusy()) {
             return;
         }
         model.reset();
+        whiteEdgeSolutionText.set("");
         for (CubieView view : cubieViews.values()) {
             view.updateTranslation();
         }
@@ -108,7 +179,7 @@ public final class CubeViewModel {
     }
 
     public void randomize() {
-        if (animating || interacting) {
+        if (isBusy()) {
             return;
         }
         int turnCount = 50 + random.nextInt(51);
@@ -126,7 +197,7 @@ public final class CubeViewModel {
     }
 
     public void applyMoves(List<Move> moves) {
-        if (animating || interacting || moves.isEmpty()) {
+        if (isBusy() || moves.isEmpty()) {
             return;
         }
         playMoveSequence(moves, TURN_DURATION);
@@ -141,7 +212,7 @@ public final class CubeViewModel {
     }
 
     private InteractiveSlice beginInteractiveSlice(RotationAxis axis, int layer, Set<Integer> layers) {
-        if (animating || interacting) {
+        if (isBusy()) {
             return null;
         }
         List<CubieModel> affected = new ArrayList<>();
@@ -249,6 +320,10 @@ public final class CubeViewModel {
     private void playNextMove(Deque<Move> queue, Duration duration) {
         Move move = queue.pollFirst();
         if (move == null) {
+            if (playingWhiteEdgeSolution != null) {
+                whiteEdgeSolutionText.set("Last solution — " + playingWhiteEdgeSolution);
+                playingWhiteEdgeSolution = null;
+            }
             setAnimating(false);
             updateBeginnerValidation();
             return;

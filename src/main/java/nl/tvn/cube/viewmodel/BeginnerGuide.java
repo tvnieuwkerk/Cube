@@ -14,7 +14,10 @@ public final class BeginnerGuide {
     public static final List<StepDefinition> STEPS = List.of(
         new StepDefinition(BeginnerMethodStep.WHITE_CROSS, "1. White Cross", "Solve the four white edges.",
             List.of("Start with the white centre on top. Use face turns to bring each white edge to the top with white facing up.",
-                "Match each edge's other colour with its side centre. Preserve edges already placed; this stage is manual."), List.of()),
+                "Match each edge's other colour with its side centre.",
+                "For assistance, click Solve one edge. It displays and immediately plays the shortest sequence of face turns and inverses that solves at least one more white edge.",
+                "Already-solved white edges may move temporarily but are restored by the end. Other white edges may also be solved incidentally; other pieces are not preserved.",
+                "Half turns are played as two quarter turns. Repeat until the cross is complete; the button then becomes disabled."), List.of()),
         new StepDefinition(BeginnerMethodStep.WHITE_CORNERS, "2. White Corners", "Finish the white layer.",
             List.of("After the white cross, press Ctrl+X once to turn the whole cube upside down: white below, yellow above. Keep this orientation for stages 2–7.",
                 "Choose a white corner in the top layer. Turn the whole cube with Y so its destination is lower-front-right; use U to place the corner directly above it.",
