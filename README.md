@@ -35,3 +35,19 @@ mvn javafx:run
 - **UI Framework:** JavaFX 21 (3D scene, materials, lighting)
 - **Build Tool:** Maven (with javafx-maven-plugin)
 - **Testing:** JUnit 5
+
+## Beginner solving guide
+Open **Help → Beginner Method** for a manual seven-stage guide. Solve the white cross on top,
+then press **Ctrl+X** to put white below and yellow above for the remaining stages. Each
+algorithm includes its required setup and stopping condition. **Run once** executes only
+the displayed sequence; it does not choose a case or prepare the cube automatically.
+
+The completion indicators check both piece locations and sticker directions, including all
+earlier stages. They update after every move and can temporarily turn red during the final
+corner-twisting procedure. Follow that procedure through all corners and align the top layer.
+Camera controls change the viewpoint; they do not change which layer a move turns.
+
+## Tests
+Run `mvn test`. The suite covers cube moves and orientations, guide algorithms and staged
+solving, plus JavaFX help and animation integration. JavaFX integration tests need an accessible
+desktop display (or a virtual display); they are skipped on Linux when `DISPLAY` is unset.

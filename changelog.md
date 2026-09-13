@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-09-13 09:09:47 UTC - Make the beginner solving guide accurate
+- Summary of change request: Implement accurate sticker-aware completion checks and a consistent manual beginner guide with verified algorithm setups.
+- Summary of change request implementation: Added exact cubie orientation and model-owned moves; derive rendering and face picking from model state; validate sticker directions and cumulative solving stages; publish progress after every move and disable help execution while busy. Rewrote the guide with explicit white-bottom setup, case placement and stopping rules, corrected corner insertion and yellow-edge sequences, and shared testable algorithm definitions. Gave the help window a readable default size bounded by the screen. Added model, guide and JavaFX integration regression tests.
+- Validation: 25 tests pass, including all 24 whole-cube orientations, all 24 top-edge permutations, a staged solve, and JavaFX help execution and busy-state checks. JavaFX tests require desktop display access.
+
 ## 2026-01-18 19:41:30 +0000 - Update README with new functionality
 - Summary of change request: Mention Codex tooling in the README and document missing features.
 - Summary of change request implementation: Expanded the README description and usage details to cover Codex provenance, mouse gestures, algorithm runner, help window, and beginner method guidance.

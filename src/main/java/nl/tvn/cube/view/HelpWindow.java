@@ -36,6 +36,8 @@ import nl.tvn.cube.model.BeginnerMethodStep;
 import nl.tvn.cube.model.Move;
 import nl.tvn.cube.model.RotationAxis;
 import nl.tvn.cube.viewmodel.CubeViewModel;
+import nl.tvn.cube.viewmodel.BeginnerGuide;
+import nl.tvn.cube.viewmodel.BeginnerGuide.AlgorithmDefinition;
 
 public final class HelpWindow {
     private static final Duration TURN_DURATION = Duration.seconds(0.35);
@@ -66,6 +68,9 @@ public final class HelpWindow {
             stage.show();
         }
         stage.sizeToScene();
+        Rectangle2D bounds = screenBoundsForOwner();
+        stage.setWidth(Math.min(stage.getWidth(), bounds.getWidth()));
+        stage.setHeight(Math.min(stage.getHeight(), bounds.getHeight()));
         positionToRightOfOwner();
         stage.toFront();
     }
@@ -102,7 +107,9 @@ public final class HelpWindow {
         Tab aboutTab = new Tab("About", buildAboutContent());
         tabPane.getTabs().addAll(shortcutsTab, beginnerTab, aboutTab);
 
-        return new StackPane(tabPane);
+        StackPane content = new StackPane(tabPane);
+        content.setPrefSize(820, 720);
+        return content;
     }
 
     private StackPane buildHelpContent() {
@@ -167,119 +174,13 @@ public final class HelpWindow {
         VBox content = new VBox(CARD_SPACING);
         content.setPadding(new Insets(CARD_SPACING));
 
-        content.getChildren().addAll(
-            buildIntroCard(),
-            buildStepCard(
-                "1. White Cross (Top Face)",
-                viewModel.beginnerStepProperty(BeginnerMethodStep.WHITE_CROSS),
-                "Goal:",
-                List.of(
-                    "Make a cross on the white face",
-                    "Side colors of the cross must match the center pieces"
-                ),
-                "Notes:",
-                List.of(
-                    "Mostly intuitive",
-                    "No long algorithms",
-                    "Focus on edge pieces only"
-                ),
-                null,
-                List.of()
-            ),
-            buildStepCard(
-                "2. White Corners (Finish First Layer)",
-                viewModel.beginnerStepProperty(BeginnerMethodStep.WHITE_CORNERS),
-                "Goal:",
-                List.of(
-                    "Place the four white corners correctly",
-                    "First layer becomes fully solved"
-                ),
-                null,
-                List.of(),
-                "Typical Algorithms:",
-                List.of(
-                    new AlgorithmDefinition("Insert corner on the right", "R U R'"),
-                    new AlgorithmDefinition("Insert corner on the left", "L' U' L")
-                )
-            ),
-            buildStepCard(
-                "3. Middle Layer Edges",
-                viewModel.beginnerStepProperty(BeginnerMethodStep.MIDDLE_LAYER_EDGES),
-                "Goal:",
-                List.of(
-                    "Solve the four edge pieces in the middle layer",
-                    "No yellow on these edges"
-                ),
-                null,
-                List.of(),
-                "Algorithms:",
-                List.of(
-                    new AlgorithmDefinition("Edge goes to the right", "U R U' R' U' F' U F"),
-                    new AlgorithmDefinition("Edge goes to the left", "U' L' U L U F U' F'")
-                )
-            ),
-            buildStepCard(
-                "4. Yellow Cross (Last Layer – Part 1)",
-                viewModel.beginnerStepProperty(BeginnerMethodStep.YELLOW_CROSS),
-                "Goal:",
-                List.of(
-                    "Form a yellow cross on the bottom face",
-                    "Ignore side colors for now"
-                ),
-                "Notes:",
-                List.of(
-                    "Possible cases: Dot, L-shape, Line (repeat the algorithm until you get the cross)"
-                ),
-                "Algorithm:",
-                List.of(new AlgorithmDefinition(null, "F R U R' U' F'"))
-            ),
-            buildStepCard(
-                "5. Orient Yellow Edges (Last Layer – Part 2)",
-                viewModel.beginnerStepProperty(BeginnerMethodStep.YELLOW_EDGE_ALIGNMENT),
-                "Goal:",
-                List.of(
-                    "Match the yellow cross edges with side centers"
-                ),
-                null,
-                List.of(),
-                "Algorithm:",
-                List.of(new AlgorithmDefinition(null, "R U R' U R U2 R' U"))
-            ),
-            buildStepCard(
-                "6. Position Yellow Corners (Last Layer – Part 3)",
-                viewModel.beginnerStepProperty(BeginnerMethodStep.YELLOW_CORNER_POSITION),
-                "Goal:",
-                List.of(
-                    "Put yellow corners in the correct location",
-                    "Orientation does not matter yet"
-                ),
-                "Notes:",
-                List.of(
-                    "Repeat until all corners are in the right place."
-                ),
-                "Algorithm:",
-                List.of(new AlgorithmDefinition(null, "U R U' L' U R' U' L"))
-            ),
-            buildStepCard(
-                "7. Orient Yellow Corners (Finish the Cube)",
-                viewModel.beginnerStepProperty(BeginnerMethodStep.YELLOW_CORNER_ORIENTATION),
-                "Goal:",
-                List.of(
-                    "Twist yellow corners so the cube is fully solved"
-                ),
-                "How to use it:",
-                List.of(
-                    "Keep one unsolved yellow corner at the front-right",
-                    "Repeat the algorithm until it is correct",
-                    "Turn only the U face to bring the next corner into position",
-                    "Repeat until solved"
-                ),
-                "Algorithm (Right-hand version):",
-                List.of(new AlgorithmDefinition(null, "R' D' R D"))
-            ),
-            buildTipsCard(),
-            buildSummaryCard()
-        );
+        content.getChildren().add(buildIntroCard());
+        for (BeginnerGuide.StepDefinition step : BeginnerGuide.STEPS) {
+            content.getChildren().add(buildStepCard(step.title(), viewModel.beginnerStepProperty(step.step()),
+                "Goal:", List.of(step.goal()), "Setup and use:", step.instructions(),
+                "Run the stated case once:", step.algorithms()));
+        }
+        content.getChildren().addAll(buildTipsCard(), buildSummaryCard());
 
         ScrollPane scrollPane = new ScrollPane(content);
         scrollPane.setFitToWidth(true);
@@ -294,7 +195,7 @@ public final class HelpWindow {
 
     private VBox buildIntroCard() {
         Label title = buildCardTitle("Beginner Method (Layer by Layer)");
-        Label subtitle = buildBodyText("White on top and yellow on bottom. Follow each step in order.");
+        Label subtitle = buildBodyText("Follow the steps in order. Start white above; after the cross, turn the cube to white below and yellow above.");
         VBox card = new VBox(8, title, subtitle);
         return wrapCard(card);
     }
@@ -331,8 +232,11 @@ public final class HelpWindow {
             null,
             List.of(
                 "Do not panic if the cube looks scrambled during steps 6–7",
-                "Always keep the same face on top",
-                "Centers never move—use them as references",
+                "After stage 1, keep yellow above. Use Y to change the front only when instructed.",
+                "Arrow keys move the camera, not the cube: U always turns the actual upper layer.",
+                "Run once applies the displayed moves; it does not select or prepare a case for you.",
+                "A green indicator includes all earlier stages and updates after each committed move.",
+                "Use centre colours as references; whole-cube rotations carry the centres with the cube",
                 "Accuracy matters more than speed"
             )
         );
@@ -391,7 +295,8 @@ public final class HelpWindow {
         algorithm.setWrapText(true);
 
         VBox textGroup = new VBox(2, label, algorithm);
-        Button execute = new Button("Execute");
+        Button execute = new Button("Run once");
+        execute.disableProperty().bind(viewModel.busyProperty());
         execute.setOnAction(event -> algorithmRunner.accept(definition.algorithm()));
         execute.setFocusTraversable(false);
         execute.setStyle("-fx-background-color: #3a3a3a; -fx-text-fill: white; -fx-background-radius: 6;");
@@ -547,6 +452,4 @@ public final class HelpWindow {
     private record TurnDefinition(String label, Move move) {
     }
 
-    private record AlgorithmDefinition(String label, String algorithm) {
-    }
 }

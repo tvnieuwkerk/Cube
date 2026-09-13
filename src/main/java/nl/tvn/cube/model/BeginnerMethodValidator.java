@@ -18,13 +18,18 @@ public final class BeginnerMethodValidator {
         results.put(BeginnerMethodStep.YELLOW_EDGE_ALIGNMENT, isYellowEdgesAligned(cubies, rotation));
         results.put(BeginnerMethodStep.YELLOW_CORNER_POSITION, areYellowCornersPositioned(cubies, rotation));
         results.put(BeginnerMethodStep.YELLOW_CORNER_ORIENTATION, isCubeSolved(cubies, rotation));
+        boolean previous = true;
+        for (BeginnerMethodStep step : BeginnerMethodStep.values()) {
+            previous = previous && results.get(step);
+            results.put(step, previous);
+        }
         return results;
     }
 
     public boolean isWhiteCrossSolved(List<CubieModel> cubies, Rotation rotation) {
         return cubies.stream()
             .filter(this::isWhiteEdge)
-            .allMatch(cubie -> isInHomePosition(cubie, rotation));
+            .allMatch(cubie -> isPieceSolved(cubie, rotation));
     }
 
     public boolean isWhiteCrossSolved(List<CubieModel> cubies) {
@@ -34,7 +39,7 @@ public final class BeginnerMethodValidator {
     public boolean isWhiteCornersSolved(List<CubieModel> cubies, Rotation rotation) {
         return cubies.stream()
             .filter(this::isWhiteCorner)
-            .allMatch(cubie -> isInHomePosition(cubie, rotation));
+            .allMatch(cubie -> isPieceSolved(cubie, rotation));
     }
 
     public boolean isWhiteCornersSolved(List<CubieModel> cubies) {
@@ -44,7 +49,7 @@ public final class BeginnerMethodValidator {
     public boolean isMiddleLayerEdgesSolved(List<CubieModel> cubies, Rotation rotation) {
         return cubies.stream()
             .filter(this::isMiddleEdge)
-            .allMatch(cubie -> isInHomePosition(cubie, rotation));
+            .allMatch(cubie -> isPieceSolved(cubie, rotation));
     }
 
     public boolean isMiddleLayerEdgesSolved(List<CubieModel> cubies) {
@@ -54,7 +59,8 @@ public final class BeginnerMethodValidator {
     public boolean isYellowCrossSolved(List<CubieModel> cubies, Rotation rotation) {
         return cubies.stream()
             .filter(this::isYellowEdge)
-            .allMatch(cubie -> rotation.applyY(cubie.coordinate()) == -1);
+            .allMatch(cubie -> rotation.applyY(cubie.coordinate()) == -1
+                && stickerMatches(cubie, rotation, new CubeVector(0, -1, 0)));
     }
 
     public boolean isYellowCrossSolved(List<CubieModel> cubies) {
@@ -64,7 +70,7 @@ public final class BeginnerMethodValidator {
     public boolean isYellowEdgesAligned(List<CubieModel> cubies, Rotation rotation) {
         return cubies.stream()
             .filter(this::isYellowEdge)
-            .allMatch(cubie -> isInHomePosition(cubie, rotation));
+            .allMatch(cubie -> isPieceSolved(cubie, rotation));
     }
 
     public boolean isYellowEdgesAligned(List<CubieModel> cubies) {
@@ -82,7 +88,7 @@ public final class BeginnerMethodValidator {
     }
 
     public boolean isCubeSolved(List<CubieModel> cubies, Rotation rotation) {
-        return cubies.stream().allMatch(cubie -> isInHomePosition(cubie, rotation));
+        return cubies.stream().allMatch(cubie -> isPieceSolved(cubie, rotation));
     }
 
     public boolean isCubeSolved(List<CubieModel> cubies) {
@@ -145,6 +151,21 @@ public final class BeginnerMethodValidator {
         return rotation.applyX(cubie.coordinate()) == cubie.homeX()
             && rotation.applyY(cubie.coordinate()) == cubie.homeY()
             && rotation.applyZ(cubie.coordinate()) == cubie.homeZ();
+    }
+
+    private boolean isPieceSolved(CubieModel cubie, Rotation rotation) {
+        return isInHomePosition(cubie, rotation)
+            && (cubie.homeX() == 0 || stickerMatches(cubie, rotation, new CubeVector(cubie.homeX(), 0, 0)))
+            && (cubie.homeY() == 0 || stickerMatches(cubie, rotation, new CubeVector(0, cubie.homeY(), 0)))
+            && (cubie.homeZ() == 0 || stickerMatches(cubie, rotation, new CubeVector(0, 0, cubie.homeZ())));
+    }
+
+    private boolean stickerMatches(CubieModel cubie, Rotation rotation, CubeVector original) {
+        CubeVector actual = cubie.direction(original);
+        CubeCoordinate coordinate = new CubeCoordinate(actual.x(), actual.y(), actual.z());
+        return rotation.applyX(coordinate) == original.x()
+            && rotation.applyY(coordinate) == original.y()
+            && rotation.applyZ(coordinate) == original.z();
     }
 
     private Rotation resolveOrientation(List<CubieModel> cubies) {

@@ -11,11 +11,9 @@ import javafx.scene.shape.Box;
 import javafx.scene.shape.DrawMode;
 import javafx.scene.transform.Rotate;
 import javafx.geometry.Point3D;
-import nl.tvn.cube.model.Move;
 import nl.tvn.cube.model.RotationAxis;
 import nl.tvn.cube.viewmodel.CubeViewModel;
 
-import java.util.Set;
 
 public final class CubeMouseController {
     private static final double DRAG_THRESHOLD = 4.0;
@@ -127,8 +125,12 @@ public final class CubeMouseController {
         activeLayer = selectedFace.layer();
         int layerDirection = activeLayer > 0 ? 1 : -1;
         activeDirection = computeDragDirection(activeAxis, true, layerDirection);
-        activeRotate = new Rotate(0, axisVector(activeAxis));
-        cubeGroup.getTransforms().add(activeRotate);
+        activeSlice = viewModel.beginInteractiveCube(activeAxis);
+        if (activeSlice == null) {
+            state = InteractionState.IDLE;
+            return;
+        }
+        activeRotate = activeSlice.rotate();
         state = InteractionState.FACE_ROTATE_DRAG;
     }
 
@@ -154,16 +156,10 @@ public final class CubeMouseController {
         if (activeRotate == null) {
             return;
         }
-        double angle = activeRotate.getAngle();
-        cubeGroup.getTransforms().remove(activeRotate);
+        int turns = (int) Math.round(activeRotate.getAngle() / 90.0);
+        viewModel.finishInteractiveSlice(activeSlice, turns);
+        activeSlice = null;
         activeRotate = null;
-        int turns = (int) Math.round(angle / 90.0);
-        if (activeAxis == RotationAxis.X) {
-            turns = -turns;
-        }
-        if (turns != 0) {
-            viewModel.applyMove(new Move(activeAxis, Set.of(-1, 0, 1), turns));
-        }
         clearSelection();
     }
 

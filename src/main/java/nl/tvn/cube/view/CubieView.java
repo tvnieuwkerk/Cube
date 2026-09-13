@@ -6,8 +6,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
 import javafx.scene.transform.Affine;
-import javafx.scene.transform.Rotate;
 import nl.tvn.cube.model.CubieModel;
+import nl.tvn.cube.model.CubeVector;
 import nl.tvn.cube.model.RotationAxis;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,15 +30,13 @@ public final class CubieView extends Group {
         return model;
     }
 
-    public void rotateAroundWorld(RotationAxis axis, double angleDegrees) {
-        orientation.prepend(new Rotate(angleDegrees, axisVector(axis)));
-    }
-
-    public void resetOrientation() {
-        orientation.setToIdentity();
-    }
-
     public void updateTranslation() {
+        // Convert the model basis to JavaFX coordinates: S * basis * S, S = diag(1,-1,-1).
+        CubeVector x = model.direction(new CubeVector(1, 0, 0));
+        CubeVector y = model.direction(new CubeVector(0, 1, 0));
+        CubeVector z = model.direction(new CubeVector(0, 0, 1));
+        orientation.setToTransform(x.x(), -y.x(), -z.x(), 0,
+            -x.y(), y.y(), z.y(), 0, -x.z(), y.z(), z.z(), 0);
         double step = CubeConstants.step();
         setTranslateX(model.coordinate().x() * step);
         setTranslateY(-model.coordinate().y() * step);
@@ -116,8 +114,10 @@ public final class CubieView extends Group {
         int y = model.coordinate().y();
         int z = model.coordinate().z();
         for (StickerInfo sticker : stickers) {
-            Point3D worldNormal = orientation.deltaTransform(sticker.localNormal());
-            Point3D modelNormal = new Point3D(worldNormal.getX(), -worldNormal.getY(), -worldNormal.getZ());
+            Point3D original = sticker.localNormal();
+            CubeVector direction = model.direction(new CubeVector((int) original.getX(),
+                (int) original.getY(), (int) original.getZ()));
+            Point3D modelNormal = new Point3D(direction.x(), direction.y(), direction.z());
             RotationAxis axis = dominantAxis(modelNormal);
             int layer = axisLayerFromCoordinate(axis, x, y, z);
             sticker.sticker().setUserData(new FacePickInfo(axis, layer, x, y, z));
@@ -148,11 +148,4 @@ public final class CubieView extends Group {
     private record StickerInfo(Box sticker, Point3D localNormal) {
     }
 
-    private static javafx.geometry.Point3D axisVector(RotationAxis axis) {
-        return switch (axis) {
-            case X -> Rotate.X_AXIS;
-            case Y -> Rotate.Y_AXIS;
-            case Z -> Rotate.Z_AXIS;
-        };
-    }
 }

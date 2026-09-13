@@ -35,6 +35,7 @@ public final class CubeViewModel {
     private final Random random;
     private final BeginnerMethodValidator beginnerValidator;
     private final Map<BeginnerMethodStep, BooleanProperty> beginnerStepStatus;
+    private final BooleanProperty busy = new SimpleBooleanProperty(false);
     private boolean animating;
     private boolean interacting;
 
@@ -58,6 +59,20 @@ public final class CubeViewModel {
 
     public ReadOnlyBooleanProperty beginnerStepProperty(BeginnerMethodStep step) {
         return beginnerStepStatus.get(step);
+    }
+
+    public ReadOnlyBooleanProperty busyProperty() {
+        return busy;
+    }
+
+    private void setAnimating(boolean value) {
+        animating = value;
+        busy.set(animating || interacting);
+    }
+
+    private void setInteracting(boolean value) {
+        interacting = value;
+        busy.set(animating || interacting);
     }
 
     public boolean isBusy() {
@@ -87,7 +102,6 @@ public final class CubeViewModel {
         }
         model.reset();
         for (CubieView view : cubieViews.values()) {
-            view.resetOrientation();
             view.updateTranslation();
         }
         updateBeginnerValidation();
@@ -118,13 +132,21 @@ public final class CubeViewModel {
         playMoveSequence(moves, TURN_DURATION);
     }
 
+    public InteractiveSlice beginInteractiveCube(RotationAxis axis) {
+        return beginInteractiveSlice(axis, 0, Set.of(-1, 0, 1));
+    }
+
     public InteractiveSlice beginInteractiveSlice(RotationAxis axis, int layer) {
+        return beginInteractiveSlice(axis, layer, Set.of(layer));
+    }
+
+    private InteractiveSlice beginInteractiveSlice(RotationAxis axis, int layer, Set<Integer> layers) {
         if (animating || interacting) {
             return null;
         }
         List<CubieModel> affected = new ArrayList<>();
         for (CubieModel cubie : model.cubies()) {
-            if (isInLayer(cubie, axis, Set.of(layer))) {
+            if (isInLayer(cubie, axis, layers)) {
                 affected.add(cubie);
             }
         }
@@ -143,7 +165,7 @@ public final class CubeViewModel {
 
         Rotate rotate = new Rotate(0, axisVector(axis));
         sliceGroup.getTransforms().add(rotate);
-        interacting = true;
+        setInteracting(true);
         return new InteractiveSlice(axis, layer, rotate, sliceGroup, views, affected);
     }
 
@@ -165,7 +187,7 @@ public final class CubeViewModel {
             applyFinalTurns(slice.affected(), slice.axis(), adjustedTurns);
         }
         cubeGroup.getChildren().addAll(slice.views());
-        interacting = false;
+        setInteracting(false);
         if (!animating) {
             updateBeginnerValidation();
         }
@@ -187,16 +209,6 @@ public final class CubeViewModel {
         };
     }
 
-    private void applyQuarterTurn(List<CubieModel> affected, RotationAxis axis, int turn) {
-        double angle = rotationAngle(axis, turn);
-        for (CubieModel cubie : affected) {
-            CubieView view = cubieViews.get(cubie);
-            view.rotateAroundWorld(axis, angle);
-            rotateCoordinate(cubie, axis, turn);
-            view.updateTranslation();
-        }
-    }
-
     private void animateTurn(List<CubieModel> affected, RotationAxis axis, int turns, Duration duration) {
         List<CubieView> views = new ArrayList<>(affected.size());
         for (CubieModel cubie : affected) {
@@ -216,13 +228,13 @@ public final class CubeViewModel {
             new KeyFrame(Duration.ZERO, new KeyValue(rotate.angleProperty(), 0)),
             new KeyFrame(duration, new KeyValue(rotate.angleProperty(), angle))
         );
-        animating = true;
+        setAnimating(true);
         timeline.setOnFinished(event -> {
             sliceGroup.getTransforms().clear();
             cubeGroup.getChildren().remove(sliceGroup);
             applyFinalTurns(affected, axis, turns);
             cubeGroup.getChildren().addAll(views);
-            animating = false;
+            setAnimating(false);
             updateBeginnerValidation();
         });
         timeline.play();
@@ -230,14 +242,14 @@ public final class CubeViewModel {
 
     private void playMoveSequence(List<Move> moves, Duration duration) {
         Deque<Move> queue = new ArrayDeque<>(moves);
-        animating = true;
+        setAnimating(true);
         playNextMove(queue, duration);
     }
 
     private void playNextMove(Deque<Move> queue, Duration duration) {
         Move move = queue.pollFirst();
         if (move == null) {
-            animating = false;
+            setAnimating(false);
             updateBeginnerValidation();
             return;
         }
@@ -281,10 +293,14 @@ public final class CubeViewModel {
     }
 
     private void applyFinalTurns(List<CubieModel> affected, RotationAxis axis, int turns) {
-        int step = turns > 0 ? 1 : -1;
-        for (int i = 0; i < Math.abs(turns); i++) {
-            applyQuarterTurn(affected, axis, step);
-        }
+        Set<Integer> layers = affected.stream().map(cubie -> switch (axis) {
+            case X -> cubie.coordinate().x();
+            case Y -> cubie.coordinate().y();
+            case Z -> cubie.coordinate().z();
+        }).collect(java.util.stream.Collectors.toSet());
+        model.applyMove(new Move(axis, layers, turns));
+        affected.forEach(cubie -> cubieViews.get(cubie).updateTranslation());
+        updateBeginnerValidation();
     }
 
     private double rotationAngle(RotationAxis axis, int turn) {
@@ -293,44 +309,6 @@ public final class CubeViewModel {
             case X -> -baseAngle;
             case Y, Z -> baseAngle;
         };
-    }
-
-    private void rotateCoordinate(CubieModel cubie, RotationAxis axis, int turn) {
-        int x = cubie.coordinate().x();
-        int y = cubie.coordinate().y();
-        int z = cubie.coordinate().z();
-
-        int newX = x;
-        int newY = y;
-        int newZ = z;
-
-        if (axis == RotationAxis.X) {
-            if (turn > 0) {
-                newY = z;
-                newZ = -y;
-            } else {
-                newY = -z;
-                newZ = y;
-            }
-        } else if (axis == RotationAxis.Y) {
-            if (turn > 0) {
-                newX = -z;
-                newZ = x;
-            } else {
-                newX = z;
-                newZ = -x;
-            }
-        } else if (axis == RotationAxis.Z) {
-            if (turn > 0) {
-                newX = y;
-                newY = -x;
-            } else {
-                newX = -y;
-                newY = x;
-            }
-        }
-
-        cubie.coordinate().set(newX, newY, newZ);
     }
 
     private int normalizeTurns(int turns) {
